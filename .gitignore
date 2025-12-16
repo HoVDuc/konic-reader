@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Application Data
+data/
+instance/
+*.db
+*.sqlite
+
+# Security
+secret.key
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Refactoring scripts
+refactor_*.py
+REFACTOR_NOW.py
+execute_refactor.py
+extract_templates.py

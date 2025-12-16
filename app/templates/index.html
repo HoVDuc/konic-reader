@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Thư viện</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; flex-wrap: wrap;}
+        .tab-btn { background: #eee; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold;}
+        .tab-btn.active { background: #007bff; color: white; }
+        .upload-box { background: #e9ecef; padding: 20px; border-radius: 5px; margin-bottom: 30px; display: none; }
+        .upload-box.show { display: block; }
+        .section-title { font-size: 18px; margin-top: 30px; margin-bottom: 15px; color: #555; font-weight: bold; border-bottom: 2px solid #eee; padding-bottom: 5px;}
+        .file-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
+        .card { 
+            border: 1px solid #ddd; border-radius: 8px; overflow: hidden;
+            background: white; transition: transform 0.2s; text-decoration: none; color: #333;
+            display: flex; flex-direction: column; height: 260px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative;
+        }
+        .card:hover { transform: translateY(-5px); border-color: #007bff; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .cover-zone { height: 180px; background: #f0f0f0; display: flex; justify-content: center; align-items: center; overflow: hidden; border-bottom: 1px solid #eee; position: relative;}
+        .cover-zone img { width: 100%; height: 100%; object-fit: cover; }
+        .cover-zone i { font-size: 50px; color: #ccc; }
+        .info-zone { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .name { font-size: 14px; font-weight: 600; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 5px;}
+        .meta { font-size: 12px; color: #888; }
+        .badge { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2;}
+        .status-badge { position: absolute; top: 10px; left: 10px; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; color: white; z-index: 2;}
+        .status-done { background: #28a745; }
+        .input-group { display: flex; gap: 10px; }
+        .input-text { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        
+        #progress-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: none; justify-content: center; align-items: center; }
+        .progress-content { background: white; width: 400px; padding: 30px; border-radius: 10px; text-align: center; }
+        .progress-bar-bg { width: 100%; height: 20px; background: #eee; border-radius: 10px; margin: 15px 0; overflow: hidden; }
+        .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #007bff, #00c6ff); transition: width 0.3s; }
+        #progress-text { font-weight: bold; color: #555; margin-bottom: 5px; }
+        #progress-percent { font-size: 24px; font-weight: bold; color: #007bff; }
+    </style>
+    <script>
+        function switchTab(type) {
+            document.querySelectorAll('.upload-box').forEach(el => el.classList.remove('show'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('form-' + type).classList.add('show');
+            document.getElementById('btn-' + type).classList.add('active');
+        }
+
+        function uploadFileAjax(event, url) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const modal = document.getElementById('progress-modal');
+            const pText = document.getElementById('progress-text');
+            const pFill = document.getElementById('progress-bar-fill');
+            const pPercent = document.getElementById('progress-percent');
+            
+            modal.style.display = 'flex';
+            pText.textContent = "Đang tải file lên server...";
+            pFill.style.width = "0%";
+            pPercent.textContent = "0%";
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    const visualPercent = Math.round(percentComplete * 0.3);
+                    pFill.style.width = visualPercent + "%";
+                    pPercent.textContent = visualPercent + "%";
+                }
+            };
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    const taskId = response.task_id;
+                    pText.textContent = "Đang xử lý...";
+                    
+                    const interval = setInterval(function() {
+                        fetch('/api/status/' + taskId)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.status === 'processing') {
+                                    const totalPercent = 30 + Math.round(data.progress * 0.7);
+                                    pFill.style.width = totalPercent + "%";
+                                    pPercent.textContent = totalPercent + "%";
+                                    pText.textContent = data.message;
+                                } else if (data.status === 'completed') {
+                                    clearInterval(interval);
+                                    pFill.style.width = "100%";
+                                    pPercent.textContent = "100%";
+                                    pText.textContent = "Hoàn tất! Đang tải lại trang...";
+                                    setTimeout(() => window.location.reload(), 1000);
+                                } else if (data.status === 'error') {
+                                    clearInterval(interval);
+                                    alert("Lỗi: " + data.message);
+                                    modal.style.display = 'none';
+                                }
+                            });
+                    }, 1000);
+                } else {
+                    alert("Lỗi upload file!");
+                    modal.style.display = 'none';
+                }
+            };
+            xhr.send(formData);
+        }
+    </script>
+</head>
+<body>
+    <div id="progress-modal">
+        <div class="progress-content">
+            <h3 style="margin-top:0">Đang Xử Lý</h3>
+            <div id="progress-percent">0%</div>
+            <div class="progress-bar-bg"><div id="progress-bar-fill" class="progress-bar-fill"></div></div>
+            <div id="progress-text">Đang chuẩn bị...</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2><i class="fas fa-archive"></i> Thư viện của tôi (Secure)</h2>
+        
+        <div class="tabs">
+            <button id="btn-zip" class="tab-btn active" onclick="switchTab('zip')">Upload ZIP</button>
+            <button id="btn-pdf" class="tab-btn" onclick="switchTab('pdf')">Upload PDF</button>
+            <button id="btn-folder" class="tab-btn" onclick="switchTab('folder')">Upload Folder</button>
+            <button id="btn-series" class="tab-btn" onclick="switchTab('series')" style="background: #e0cffc; color: #440099;">Tạo Bộ Truyện</button>
+        </div>
+
+        <form id="form-pdf" onsubmit="uploadFileAjax(event, '/upload/pdf')" class="upload-box show">
+            <p style="margin-top:0">Chọn file PDF (Convert & Mã hóa):</p>
+            <input type="file" name="file" accept=".pdf" required>
+            <button type="submit" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px;">Upload PDF</button>
+        </form>
+
+        <form id="form-zip" onsubmit="uploadFileAjax(event, '/upload/zip')" class="upload-box">
+            <p style="margin-top:0">Chọn file ZIP (Giải nén & Mã hóa):</p>
+            <input type="file" name="file" accept=".zip" required>
+            <button type="submit" style="background: #17a2b8; color: white; border: none; padding: 10px 20px; border-radius: 4px;">Upload ZIP</button>
+        </form>
+
+        <form id="form-folder" action="{{ url_for('upload.upload_folder') }}" method="POST" enctype="multipart/form-data" class="upload-box">
+            <p style="margin-top:0">Chọn folder (chỉ máy tính):</p>
+            <input type="file" name="files" webkitdirectory directory multiple required>
+            <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px;">Upload Folder</button>
+        </form>
+
+        <form id="form-series" action="{{ url_for('series.create_series') }}" method="POST" class="upload-box">
+            <p style="margin-top:0">Tạo bộ truyện mới:</p>
+            <div class="input-group">
+                <input type="text" name="series_name" class="input-text" placeholder="Nhập tên..." required>
+                <button type="submit" style="background: #6f42c1; color: white; border: none; padding: 10px 20px; border-radius: 4px;">Tạo Series</button>
+            </div>
+        </form>
+
+        <div class="section-title"><span>📚 Bộ Truyện (Series)</span></div>
+        <div class="file-list">
+            {% for series in series_list %}
+            <a href="{{ url_for('album.details', type='series', id=series.id) }}" class="card">
+                <div class="badge" style="background: #6f42c1;">Series</div>
+                {% if series.is_completed %} <div class="status-badge status-done"><i class="fas fa-check"></i> FULL</div> {% endif %}
+                <div class="cover-zone">
+                    {% if series.cover_image %}
+                        <img src="/album/cover/{{ series.cover_image }}">
+                    {% else %}
+                        {% set first_album = series.albums|sort(attribute='name')|first %}
+                        {% if first_album and first_album.images|length > 0 %}
+                             {% set first_img = first_album.images|sort(attribute='filename')|first %}
+                             <img src="/album/image/{{ first_album.id }}/{{ first_img.filename }}">
+                        {% else %}
+                            <i class="fas fa-layer-group" style="color:#ccc"></i>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div class="info-zone">
+                    <div class="name">{{ series.name }}</div>
+                    <div class="meta">{{ series.albums|length }} chapters</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <div class="section-title"><span>🖼️ Chapter / Album / PDF</span></div>
+        <div class="file-list">
+            {% for album in albums %}
+            <a href="{{ url_for('album.details', type='album', id=album.id) }}" class="card">
+                <div class="cover-zone">
+                    {% if album.cover_image %}
+                        <img src="/album/cover/{{ album.cover_image }}">
+                    {% elif album.images|length > 0 %}
+                        {% set first_img = album.images|sort(attribute='filename')|first %}
+                        <img src="/album/image/{{ album.id }}/{{ first_img.filename }}">
+                    {% else %}
+                        <i class="fas fa-folder" style="color: #ffc107;"></i>
+                    {% endif %}
+                </div>
+                <div class="info-zone">
+                    <div class="name">{{ album.name }}</div>
+                    <div class="meta">{{ album.images|length }} ảnh</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
