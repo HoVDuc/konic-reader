@@ -7,7 +7,8 @@
 - **📤 Upload đa dạng**: Hỗ trợ upload folder ảnh, file PDF, file ZIP
 - **🔐 Mã hóa bảo mật**: Tất cả ảnh được mã hóa với Fernet (AES-128)
 - **📖 Quản lý Series**: Nhóm các album/chapter thành series
-- **🖼️ Viewer ảnh**: Xem ảnh với giao diện thân thiện
+- **🏷️ Tags & Favorites**: Gắn thẻ và đánh dấu yêu thích cho album/series
+- **🖼️ Viewer ảnh**: Xem ảnh với giao diện thân thiện, ẩn header khi cuộn
 - **📱 Responsive**: Giao diện tương thích mobile
 
 ## 🏗️ Cấu trúc dự án
@@ -19,12 +20,14 @@ comic-album-manager/
 │   ├── models/                   # Database models (SQLAlchemy)
 │   │   ├── comic_series.py       # Model ComicSeries
 │   │   ├── image_album.py        # Model ImageAlbum
-│   │   └── image_file.py         # Model ImageFile
+│   │   ├── image_file.py         # Model ImageFile
+│   │   └── tag.py                # Model Tag
 │   ├── routes/                   # Route blueprints
 │   │   ├── main.py               # Trang chủ
 │   │   ├── upload.py             # Upload file/folder
 │   │   ├── series.py             # Quản lý series
 │   │   ├── album.py              # Quản lý album
+│   │   ├── tags.py               # Quản lý tags
 │   │   └── api.py                # REST API endpoints
 │   ├── services/                 # Business logic
 │   │   ├── encryption.py         # Mã hóa/giải mã file
@@ -36,7 +39,9 @@ comic-album-manager/
 │   │   └── validators.py         # Kiểm tra dữ liệu
 │   ├── templates/                # Jinja2 templates
 │   │   ├── index.html            # Trang chủ
+│   │   ├── upload.html           # Trang upload
 │   │   ├── details.html          # Chi tiết album
+│   │   ├── tags.html             # Quản lý tags
 │   │   └── viewer.html           # Xem ảnh
 │   └── static/                   # CSS, JS, assets
 │
@@ -107,7 +112,9 @@ Truy cập: http://localhost:5000
 | `name` | String(300) | Tên series |
 | `cover_image` | String(300) | Ảnh bìa |
 | `is_completed` | Boolean | Đã hoàn thành chưa |
+| `is_favorite` | Boolean | Đánh dấu yêu thích |
 | `albums` | Relationship | Danh sách album |
+| `tags` | Relationship | Danh sách tags |
 
 ### ImageAlbum
 | Trường | Kiểu | Mô tả |
@@ -117,6 +124,14 @@ Truy cập: http://localhost:5000
 | `folder_path` | String(300) | Đường dẫn folder |
 | `cover_image` | String(300) | Ảnh bìa |
 | `series_id` | FK | Thuộc series nào |
+| `is_favorite` | Boolean | Đánh dấu yêu thích |
+| `tags` | Relationship | Danh sách tags |
+
+### Tag
+| Trường | Kiểu | Mô tả |
+|--------|------|-------|
+| `id` | Integer | Primary key |
+| `name` | String(50) | Tên tag |
 
 ### ImageFile
 | Trường | Kiểu | Mô tả |
@@ -136,7 +151,9 @@ Truy cập: http://localhost:5000
 
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/` | Trang chủ |
+| GET | `/` | Trang chủ (Thư viện) |
+| GET | `/upload/` | Trang Upload |
+| GET | `/tags/` | Quản lý Tags |
 | GET | `/album/<id>` | Chi tiết album |
 | GET | `/viewer/<id>` | Xem ảnh album |
 | POST | `/upload/folder` | Upload folder ảnh |
@@ -145,6 +162,9 @@ Truy cập: http://localhost:5000
 | GET | `/api/image/<album_id>/<filename>` | Lấy ảnh (decrypt) |
 | GET | `/series/<id>` | Chi tiết series |
 | POST | `/series/create` | Tạo series mới |
+| POST | `/album/toggle_favorite/<type>/<id>` | Toggle yêu thích |
+| POST | `/album/add_tag/<type>/<id>` | Thêm tag |
+| POST | `/album/remove_tag/<type>/<id>` | Xóa tag |
 
 ## 📝 Cấu hình
 
@@ -174,10 +194,12 @@ pytest --cov=app tests/
 
 ## 📋 Workflow sử dụng
 
-1. **Upload album**: Trang chủ → Upload (folder/PDF/ZIP)
-2. **Tạo series**: Trang chủ → Tạo Series → Đặt tên
+1. **Upload album**: Vào trang Upload → Chọn loại (folder/PDF/ZIP)
+2. **Tạo series**: Vào trang Upload → Tạo Series → Đặt tên
 3. **Gán album vào series**: Chi tiết album → Chọn series
-4. **Xem truyện**: Click album → Viewer
+4. **Quản lý Tags**: Vào trang Tags để sửa/xóa, hoặc thêm tag trực tiếp trong trang chi tiết
+5. **Yêu thích**: Click icon ngôi sao để thêm vào danh sách yêu thích
+6. **Xem truyện**: Click album → Viewer (Header ẩn khi cuộn, nút Home để quay lại)
 
 ## 🔧 Troubleshooting
 
