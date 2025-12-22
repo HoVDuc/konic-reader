@@ -35,11 +35,13 @@ def create_app(config_name='development'):
     from app.routes.series import series_bp
     from app.routes.album import album_bp
     from app.routes.api import api_bp
+    from app.routes.tags import tags_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(upload_bp)
     app.register_blueprint(series_bp)
     app.register_blueprint(album_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(tags_bp)
     
     return app

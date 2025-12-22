@@ -5,7 +5,7 @@ import mimetypes
 from flask import Blueprint, request, redirect, url_for, render_template, send_file, current_app
 from werkzeug.utils import secure_filename
 from app import db
-from app.models import ComicSeries, ImageAlbum, ImageFile
+from app.models import ComicSeries, ImageAlbum, ImageFile, Tag
 from app.services import EncryptionService
 from app.utils import natural_sort_key
 
@@ -78,12 +78,17 @@ def details(type, id):
     return render_template('details.html',
                          type=type,
                          id=id,
+                         item=item,
                          item_name=item.name,
                          has_cover=has_cover,
                          cover_filename=cover_filename,
                          rename_url=url_for('album.rename', type=type, id=id),
                          change_cover_url=url_for('album.change_cover', type=type, id=id),
                          delete_url=url_for('album.delete', type=type, id=id),
+                         toggle_favorite_url=url_for('album.toggle_favorite', type=type, id=id),
+                         add_tag_url=url_for('album.add_tag', type=type, id=id),
+                         remove_tag_url=url_for('album.remove_tag', type=type, id=id),
+                         all_tags=Tag.query.all(),
                          **extra_context)
 
 @album_bp.route('/image/<int:album_id>/<filename>')
@@ -209,4 +214,62 @@ def remove_from_series(album_id):
     album = ImageAlbum.query.get_or_404(album_id)
     album.series_id = None
     db.session.commit()
+    return redirect(request.referrer)
+
+@album_bp.route('/toggle_favorite/<type>/<int:id>', methods=['POST'])
+def toggle_favorite(type, id):
+    """Toggle favorite status"""
+    if type == 'album':
+        item = ImageAlbum.query.get_or_404(id)
+    elif type == 'series':
+        item = ComicSeries.query.get_or_404(id)
+    else:
+        return redirect(request.referrer)
+    
+    item.is_favorite = not item.is_favorite
+    db.session.commit()
+    return redirect(request.referrer)
+
+@album_bp.route('/add_tag/<type>/<int:id>', methods=['POST'])
+def add_tag(type, id):
+    """Add tag to item"""
+    tag_name = request.form.get('tag_name')
+    if not tag_name:
+        return redirect(request.referrer)
+    
+    if type == 'album':
+        item = ImageAlbum.query.get_or_404(id)
+    elif type == 'series':
+        item = ComicSeries.query.get_or_404(id)
+    else:
+        return redirect(request.referrer)
+    
+    tag = Tag.query.filter_by(name=tag_name).first()
+    if not tag:
+        tag = Tag(name=tag_name)
+        db.session.add(tag)
+    
+    if tag not in item.tags:
+        item.tags.append(tag)
+        db.session.commit()
+        
+    return redirect(request.referrer)
+
+@album_bp.route('/remove_tag/<type>/<int:id>', methods=['POST'])
+def remove_tag(type, id):
+    """Remove tag from item"""
+    tag_id = request.form.get('tag_id')
+    
+    if type == 'album':
+        item = ImageAlbum.query.get_or_404(id)
+    elif type == 'series':
+        item = ComicSeries.query.get_or_404(id)
+    else:
+        return redirect(request.referrer)
+        
+    tag = Tag.query.get(tag_id)
+    if tag and tag in item.tags:
+        item.tags.remove(tag)
+        db.session.commit()
+        
     return redirect(request.referrer)

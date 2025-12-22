@@ -2,13 +2,18 @@
 import os
 import uuid
 import threading
-from flask import Blueprint, request, jsonify, redirect, url_for, current_app
+from flask import Blueprint, request, jsonify, redirect, url_for, current_app, render_template
 from werkzeug.utils import secure_filename
 from app import db
 from app.services import EncryptionService, PDFProcessor, ZIPProcessor, ImageService
 from app.routes.api import update_progress
 
 upload_bp = Blueprint('upload', __name__, url_prefix='/upload')
+
+@upload_bp.route('/', methods=['GET'])
+def upload_page():
+    """Render upload page"""
+    return render_template('upload.html')
 
 def get_services():
     """Get service instances"""

@@ -37,8 +37,32 @@
         <div id="center-area"></div>
         <div id="next-area"></div>
     </div>
+
+    <a href="{{ url_for('main.index') }}" id="home-fab" title="Về trang chủ"><i class="fas fa-home"></i></a>
+
     <script>
         let currentWidth = 100;
+        let lastScrollTop = 0;
+        const homeFab = document.getElementById('home-fab');
+
+        window.addEventListener('scroll', function() {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (scrollTop > lastScrollTop && scrollTop > 50) {
+                // Scroll down
+                header.style.transform = 'translateY(-100%)';
+                footer.style.transform = 'translateY(100%)';
+                homeFab.style.opacity = '0';
+                homeFab.style.pointerEvents = 'none';
+            } else {
+                // Scroll up
+                header.style.transform = 'translateY(0)';
+                footer.style.transform = 'translateY(0)';
+                homeFab.style.opacity = '1';
+                homeFab.style.pointerEvents = 'auto';
+            }
+            lastScrollTop = scrollTop;
+        });
+
         function zoom(delta) {
             currentWidth += delta;
             if (currentWidth < 20) currentWidth = 20;

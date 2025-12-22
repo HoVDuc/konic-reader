@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body{font-family:'Segoe UI',sans-serif;background:#333;margin:0;padding:20px;display:flex;justify-content:center;align-items:flex-start;min-height:100vh}
+        body{font-family:'Segoe UI',sans-serif;background:#333;margin:0;padding:20px;padding-top:80px;display:flex;justify-content:center;align-items:flex-start;min-height:100vh}
+        .navbar { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; }
+        .nav-brand { font-size: 20px; font-weight: bold; color: #333; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-link { text-decoration: none; color: #555; font-weight: 600; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
+        .nav-link:hover, .nav-link.active { color: #007bff; }
+
         .modal{background:white;width:100%;max-width:800px;border-radius:12px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,0.5);display:flex;flex-direction:column;margin-top:20px}
         .header-area{display:flex;border-bottom:1px solid #ddd;background:#fff}
         .preview-area{width:250px;background:#eee;display:flex;justify-content:center;align-items:center;position:relative;overflow:hidden;border-right:1px solid #ddd;padding:10px}
@@ -33,6 +39,15 @@
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <a href="{{ url_for('main.index') }}" class="nav-brand"><i class="fas fa-book-open"></i> AlbumMan</a>
+        <div class="nav-links">
+            <a href="{{ url_for('main.index') }}" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="{{ url_for('upload.upload_page') }}" class="nav-link"><i class="fas fa-cloud-upload-alt"></i> Upload</a>
+            <a href="{{ url_for('tags.manage_tags') }}" class="nav-link"><i class="fas fa-tags"></i> Tags</a>
+        </div>
+    </nav>
+
     <div class="modal">
         <div class="header-area">
             <div class="preview-area">
@@ -88,6 +103,50 @@
                         {% endif %}
                     </div>
                 </form>
+
+                <form action="{{ toggle_favorite_url }}" method="POST" class="form-group" style="background: {% if item.is_favorite %}#fff3cd{% else %}#f8f9fa{% endif %}; border-color: {% if item.is_favorite %}#ffeeba{% else %}#eee{% endif %}">
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <label class="form-label" style="margin:0"><i class="fas fa-star" style="color: {% if item.is_favorite %}#ffc107{% else %}#ccc{% endif %}"></i> Yêu thích</label>
+                        <button type="submit" class="btn-sm" style="background: {% if item.is_favorite %}#ffc107; color: #000{% else %}#6c757d{% endif %}">
+                            {% if item.is_favorite %}Đang thích{% else %}Thêm vào yêu thích{% endif %}
+                        </button>
+                    </div>
+                </form>
+
+                <div class="form-group">
+                    <label class="form-label">Tags</label>
+                    <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px">
+                        {% for tag in item.tags %}
+                        <span style="background:#e9ecef; padding:2px 8px; border-radius:12px; font-size:12px; display:flex; align-items:center; gap:5px">
+                            {{ tag.name }}
+                            <form action="{{ remove_tag_url }}" method="POST" style="display:inline">
+                                <input type="hidden" name="tag_id" value="{{ tag.id }}">
+                                <button type="submit" style="background:none; border:none; cursor:pointer; color:#dc3545; padding:0; font-size:12px"><i class="fas fa-times"></i></button>
+                            </form>
+                        </span>
+                        {% endfor %}
+                    </div>
+                    <form action="{{ add_tag_url }}" method="POST" style="display:flex; gap:5px">
+                        <input type="text" name="tag_name" list="tag-list" placeholder="Thêm tag mới..." style="flex-grow:1; padding:5px; border:1px solid #ddd; border-radius:4px">
+                        <datalist id="tag-list">
+                            {% for tag in all_tags %}
+                            <option value="{{ tag.name }}">
+                            {% endfor %}
+                        </datalist>
+                        <button type="submit" class="btn-sm btn-save">Thêm</button>
+                    </form>
+                    <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px;">
+                        <small style="width: 100%; color: #666; margin-bottom: 2px;">Gợi ý (nhấn để thêm):</small>
+                        {% for tag in all_tags %}
+                            {% if tag not in item.tags %}
+                                <form action="{{ add_tag_url }}" method="POST" style="display:inline">
+                                    <input type="hidden" name="tag_name" value="{{ tag.name }}">
+                                    <button type="submit" style="background:#f1f3f5; border:1px solid #ddd; padding:3px 10px; border-radius:15px; font-size:11px; cursor:pointer; color:#555; transition: background 0.2s;">{{ tag.name }} <i class="fas fa-plus" style="font-size: 9px;"></i></button>
+                                </form>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
 
                 <form action="{{ rename_url }}" method="POST" class="form-group">
                     <label class="form-label">Đổi tên</label>

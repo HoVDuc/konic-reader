@@ -17,7 +17,31 @@ header {
     justify-content: space-between;
     height: 50px;
     z-index: 100;
-    border-bottom: 1px solid #444
+    border-bottom: 1px solid #444;
+    transition: transform 0.3s ease-in-out;
+}
+
+#home-fab {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: #6f42c1;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 101;
+    text-decoration: none;
+    transition: opacity 0.3s ease-in-out, transform 0.2s;
+}
+
+#home-fab:active {
+    transform: scale(0.9);
 }
 
 .nav-left {
@@ -130,7 +154,8 @@ footer {
     justify-content: center;
     gap: 20px;
     z-index: 100;
-    border-top: 1px solid #444
+    border-top: 1px solid #444;
+    transition: transform 0.3s ease-in-out;
 }
 
 .zoom-btn {
