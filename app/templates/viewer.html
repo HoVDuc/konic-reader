@@ -1,1 +1,90 @@
-<!DOCTYPE html><html><head><title>{{ album_name }}</title><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"><style>body{margin:0;background:#222;font-family:sans-serif}header{position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.95);color:white;padding:0 10px;display:flex;align-items:center;justify-content:space-between;height:50px;z-index:100;border-bottom:1px solid #444}.nav-left{display:flex;align-items:center;gap:10px;flex:1;overflow:hidden}.back-btn{text-decoration:none;color:#ccc;font-size:20px;padding:5px}.title{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:bold}.chap-nav{display:flex;gap:2px}.nav-btn{text-decoration:none;color:white;background:#444;padding:8px 12px;font-size:14px;border-radius:4px;display:flex;align-items:center;gap:5px}.nav-btn:hover{background:#007bff}.nav-btn.disabled{opacity:0.3;pointer-events:none;background:#333}#viewer-container{margin-top:50px;padding-bottom:120px;display:flex;flex-direction:column;align-items:center}.page-img{display:block;max-width:100%;height:auto;margin-bottom:5px}.bottom-nav{width:100%;max-width:600px;margin:20px auto;display:flex;gap:10px;padding:0 10px;box-sizing:border-box}.big-btn{flex:1;text-align:center;padding:15px;border-radius:8px;color:white;text-decoration:none;font-weight:bold;font-size:16px}.btn-prev{background:#444}.btn-next{background:#007bff}.btn-next:hover{background:#0056b3}footer{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.9);color:white;padding:10px;display:flex;justify-content:center;gap:20px;z-index:100;border-top:1px solid #444}.zoom-btn{background:#28a745;color:white;border:none;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;justify-content:center;align-items:center}#zoom-level{font-weight:bold;align-self:center;font-size:18px;width:60px;text-align:center}</style></head><body><header><div class="nav-left"><a href="{{ url_for('album.details', type='album', id=album_id) }}" class="back-btn"><i class="fas fa-arrow-left"></i></a><div class="title">{{ album_name }}</div></div><div class="chap-nav"><a href="{{ url_for('album.view_album', id=prev_id) if prev_id else '#' }}" class="nav-btn {{ 'disabled' if not prev_id }}"><i class="fas fa-chevron-left"></i></a><a href="{{ url_for('album.view_album', id=next_id) if next_id else '#' }}" class="nav-btn {{ 'disabled' if not next_id }}"><i class="fas fa-chevron-right"></i></a></div></header><div id="viewer-container">{% for img in images %}<img class="page-img" src="{{ url_for('album.get_image', album_id=album_id, filename=img.filename) }}" loading="lazy" style="width:100%">{% endfor %}<div class="bottom-nav">{% if prev_id %}<a href="{{ url_for('album.view_album', id=prev_id) }}" class="big-btn btn-prev"><i class="fas fa-arrow-left"></i> Chap Trước</a>{% endif %}{% if next_id %}<a href="{{ url_for('album.view_album', id=next_id) }}" class="big-btn btn-next">Chap Sau <i class="fas fa-arrow-right"></i></a>{% endif %}</div>{% if not next_id and not prev_id %}<div style="color:#777;margin-top:20px">Hết danh sách</div>{% endif %}</div><footer><button class="zoom-btn" onclick="zoom(-10)">-</button><span id="zoom-level">100%</span><button class="zoom-btn" onclick="zoom(10)">+</button></footer><script>let currentWidth=100;function zoom(delta){currentWidth+=delta;if(currentWidth<20)currentWidth=20;if(currentWidth>300)currentWidth=300;document.getElementById('zoom-level').textContent=currentWidth+'%';document.querySelectorAll('.page-img').forEach(img=>{img.style.width=currentWidth+'%'})}document.addEventListener('keydown',function(event){if(event.key==="ArrowLeft"){% if prev_id %}window.location.href="{{ url_for('album.view_album', id=prev_id) }}";{% endif %} }else if(event.key==="ArrowRight"){% if next_id %}window.location.href="{{ url_for('album.view_album', id=next_id) }}";{% endif %} }});</script></body></html>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{ album_name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/viewer.css') }}">
+</head>
+
+<body>
+    <header>
+        <div class="nav-left"><a href="{{ url_for('album.details', type='album', id=album_id) }}" class="back-btn"><i
+                    class="fas fa-arrow-left"></i></a>
+            <div class="title">{{ album_name }}</div>
+        </div>
+        <div class="chap-nav"><a href="{{ url_for('album.view_album', id=prev_id) if prev_id else '#' }}"
+                class="nav-btn {{ 'disabled' if not prev_id }}"><i class="fas fa-chevron-left"></i></a><a
+                href="{{ url_for('album.view_album', id=next_id) if next_id else '#' }}"
+                class="nav-btn {{ 'disabled' if not next_id }}"><i class="fas fa-chevron-right"></i></a></div>
+    </header>
+    <div id="viewer-container">
+        <div class="image-container">
+            {% for img in images %}<img class="page-img"
+                src="{{ url_for('album.get_image', album_id=album_id, filename=img.filename) }}" loading="lazy">{% endfor %}
+        </div>
+        <div class="bottom-nav">{% if prev_id %}<a href="{{ url_for('album.view_album', id=prev_id) }}"
+                class="big-btn btn-prev"><i class="fas fa-arrow-left"></i> Chap Trước</a>{% endif %}{% if next_id %}<a
+                href="{{ url_for('album.view_album', id=next_id) }}" class="big-btn btn-next">Chap Sau <i
+                    class="fas fa-arrow-right"></i></a>{% endif %}</div>{% if not next_id and not prev_id %}<div
+            style="color:#777;margin-top:20px">Hết danh sách</div>{% endif %}
+    </div>
+    <footer><button class="zoom-btn" onclick="zoom(-10)">-</button><span id="zoom-level">100%</span><button
+            class="zoom-btn" onclick="zoom(10)">+</button></footer>
+    <div id="click-layer">
+        <div id="prev-area"></div>
+        <div id="center-area"></div>
+        <div id="next-area"></div>
+    </div>
+    <script>
+        let currentWidth = 100;
+        function zoom(delta) {
+            currentWidth += delta;
+            if (currentWidth < 20) currentWidth = 20;
+            if (currentWidth > 300) currentWidth = 300;
+            document.getElementById('zoom-level').textContent = currentWidth + '%';
+            document.querySelectorAll('.page-img').forEach(img => {
+                img.style.width = currentWidth + '%'
+            })
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === "ArrowLeft") {
+                {% if prev_id %}
+                window.location.href = "{{ url_for('album.view_album', id=prev_id) }}";
+                {% endif %}
+            } else if (event.key === "ArrowRight") {
+                {% if next_id %}
+                window.location.href = "{{ url_for('album.view_album', id=next_id) }}";
+                {% endif %}
+            }
+        });
+
+        const header = document.querySelector('header');
+        const footer = document.querySelector('footer');
+        const prevArea = document.getElementById('prev-area');
+        const centerArea = document.getElementById('center-area');
+        const nextArea = document.getElementById('next-area');
+
+        centerArea.addEventListener('click', () => {
+            header.hidden = !header.hidden;
+            footer.hidden = !footer.hidden;
+        });
+
+        prevArea.addEventListener('click', () => {
+            {% if prev_id %}
+            window.location.href = "{{ url_for('album.view_album', id=prev_id) }}";
+            {% endif %}
+        });
+
+        nextArea.addEventListener('click', () => {
+            {% if next_id %}
+            window.location.href = "{{ url_for('album.view_album', id=next_id) }}";
+            {% endif %}
+        });
+
+    </script>
+</body>
+
+</html>

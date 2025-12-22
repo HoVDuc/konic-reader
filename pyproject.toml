@@ -1,7 +1,7 @@
 [project]
-name = "albumman"
+name = "comic-album-manager"
 version = "0.1.0"
-description = "Add your description here"
+description = "Flask web app for managing and viewing comic/image albums with encryption"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
