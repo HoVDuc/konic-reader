@@ -2,6 +2,8 @@
 import os
 import time
 import zipfile
+import io
+from PIL import Image
 from werkzeug.utils import secure_filename
 from app.utils.sorting import natural_sort_key
 
@@ -49,18 +51,28 @@ class ZIPProcessor:
                 if progress_callback:
                     progress_callback(percent, f'Đang giải nén: {count}/{total_files}')
                 
-                img_data = zip_ref.read(file_in_zip)
-                ext = os.path.splitext(file_in_zip)[1]
-                safe_img_name = f"{count:04d}_extracted{ext}"
-                save_path = os.path.join(abs_folder_path, safe_img_name)
-                
-                # Save encrypted
-                self.encryption_service.save_encrypted(img_data, save_path)
-                
-                db_session.add(ImageFile(filename=safe_img_name, album_id=new_album.id))
-                
-                if count % 10 == 0:
-                    db_session.commit()
+                try:
+                    img_data = zip_ref.read(file_in_zip)
+                    
+                    # Convert to WebP
+                    img = Image.open(io.BytesIO(img_data))
+                    img_byte_arr = io.BytesIO()
+                    img.save(img_byte_arr, format='WEBP', quality=90)
+                    webp_data = img_byte_arr.getvalue()
+                    
+                    safe_img_name = f"{count:04d}_extracted.webp"
+                    save_path = os.path.join(abs_folder_path, safe_img_name)
+                    
+                    # Save encrypted
+                    self.encryption_service.save_encrypted(webp_data, save_path)
+                    
+                    db_session.add(ImageFile(filename=safe_img_name, album_id=new_album.id))
+                    
+                    if count % 10 == 0:
+                        db_session.commit()
+                except Exception as e:
+                    print(f"Error processing zip file {file_in_zip}: {e}")
+                    continue
             
             db_session.commit()
         

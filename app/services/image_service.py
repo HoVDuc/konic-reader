@@ -1,6 +1,8 @@
 """Image Service"""
 import os
 import time
+import io
+from PIL import Image
 from werkzeug.utils import secure_filename
 from app.utils.sorting import natural_sort_key
 
@@ -37,16 +39,26 @@ class ImageService:
         for file in files:
             if file.filename and file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
                 safe_img_name = secure_filename(os.path.basename(file.filename))
+                name_without_ext = os.path.splitext(safe_img_name)[0]
                 count = len(new_album.images) + 1
-                final_filename = f"{count:04d}_{safe_img_name}"
+                final_filename = f"{count:04d}_{name_without_ext}.webp"
                 save_path = os.path.join(abs_folder_path, final_filename)
                 
-                # Encrypt and save
-                img_data = file.read()
-                self.encryption_service.save_encrypted(img_data, save_path)
-                
-                img_record = ImageFile(filename=final_filename, album_id=new_album.id)
-                db_session.add(img_record)
+                # Convert to WebP and Encrypt
+                try:
+                    img = Image.open(file)
+                    img_byte_arr = io.BytesIO()
+                    # Convert to RGB if necessary (e.g. for PNG with transparency if saving as JPEG, but WebP supports transparency)
+                    img.save(img_byte_arr, format='WEBP', quality=90)
+                    img_data = img_byte_arr.getvalue()
+                    
+                    self.encryption_service.save_encrypted(img_data, save_path)
+                    
+                    img_record = ImageFile(filename=final_filename, album_id=new_album.id)
+                    db_session.add(img_record)
+                except Exception as e:
+                    print(f"Error processing image {file.filename}: {e}")
+                    continue
         
         db_session.commit()
         return new_album

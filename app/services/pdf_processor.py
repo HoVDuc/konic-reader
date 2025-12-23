@@ -46,12 +46,12 @@ class PDFProcessor:
             
             for idx, page in enumerate(pages):
                 page_num = i + idx
-                img_filename = f"{page_num:04d}_page.png"
+                img_filename = f"{page_num:04d}_page.webp"
                 save_path = os.path.join(abs_folder_path, img_filename)
                 
-                # Convert image to bytes
+                # Convert image to bytes (WebP)
                 img_byte_arr = io.BytesIO()
-                page.save(img_byte_arr, format='PNG')
+                page.save(img_byte_arr, format='WEBP', quality=90)
                 img_bytes = img_byte_arr.getvalue()
                 
                 # Save encrypted
