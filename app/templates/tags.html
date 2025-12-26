@@ -51,6 +51,13 @@
             <a href="{{ url_for('main.index') }}" class="nav-link"><i class="fas fa-home"></i> Home</a>
             <a href="{{ url_for('upload.upload_page') }}" class="nav-link"><i class="fas fa-cloud-upload-alt"></i> Upload</a>
             <a href="{{ url_for('tags.manage_tags') }}" class="nav-link active"><i class="fas fa-tags"></i> Tags</a>
+            {% if current_user.is_authenticated %}
+                <span class="nav-link"><i class="fas fa-user"></i> {{ current_user.username }}</span>
+                <a href="{{ url_for('auth.logout') }}" class="nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="nav-link"><i class="fas fa-sign-in-alt"></i> Login</a>
+                <a href="{{ url_for('auth.signup') }}" class="nav-link"><i class="fas fa-user-plus"></i> Sign Up</a>
+            {% endif %}
         </div>
     </nav>
 

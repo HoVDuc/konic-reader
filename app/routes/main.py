@@ -1,10 +1,12 @@
 """Main routes - Homepage and general pages"""
 from flask import Blueprint, render_template, request
+from flask_login import login_required
 from app.models import ComicSeries, ImageAlbum, Tag
 
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
+@login_required
 def index():
     """Homepage"""
     tag_filter = request.args.get('tag')

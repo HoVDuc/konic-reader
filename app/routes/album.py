@@ -3,6 +3,7 @@ import os
 import shutil
 import mimetypes
 from flask import Blueprint, request, redirect, url_for, render_template, send_file, current_app
+from flask_login import login_required
 from werkzeug.utils import secure_filename
 from app import db
 from app.models import ComicSeries, ImageAlbum, ImageFile, Tag
@@ -12,6 +13,7 @@ from app.utils import natural_sort_key
 album_bp = Blueprint('album', __name__, url_prefix='/album')
 
 @album_bp.route('/<int:id>')
+@login_required
 def view_album(id):
     """View album in reader"""
     album = ImageAlbum.query.get_or_404(id)
@@ -40,6 +42,7 @@ def view_album(id):
                          next_id=next_id)
 
 @album_bp.route('/details/<type>/<int:id>')
+@login_required
 def details(type, id):
     """Show album or series details"""
     has_cover = False
@@ -92,6 +95,7 @@ def details(type, id):
                          **extra_context)
 
 @album_bp.route('/image/<int:album_id>/<filename>')
+@login_required
 def get_image(album_id, filename):
     """Serve decrypted image"""
     album = ImageAlbum.query.get_or_404(album_id)
@@ -115,12 +119,14 @@ def get_image(album_id, filename):
     return send_file(decrypted_file, mimetype=mimetype)
 
 @album_bp.route('/cover/<filename>')
+@login_required
 def get_cover(filename):
     """Serve cover image"""
     from flask import send_from_directory
     return send_from_directory(current_app.config['COVER_FOLDER'], filename)
 
 @album_bp.route('/rename/<type>/<int:id>', methods=['POST'])
+@login_required
 def rename(type, id):
     """Rename album or series"""
     new_name = request.form.get('new_name')
@@ -139,6 +145,7 @@ def rename(type, id):
     return redirect(request.referrer)
 
 @album_bp.route('/change_cover/<type>/<int:id>', methods=['POST'])
+@login_required
 def change_cover(type, id):
     """Change cover image"""
     import time
@@ -177,6 +184,7 @@ def change_cover(type, id):
     return redirect(request.referrer)
 
 @album_bp.route('/delete/<type>/<int:id>', methods=['POST'])
+@login_required
 def delete(type, id):
     """Delete album or series"""
     if type == 'album':
@@ -195,6 +203,7 @@ def delete(type, id):
     return redirect(url_for('main.index'))
 
 @album_bp.route('/add_to_series/<int:album_id>', methods=['POST'])
+@login_required
 def add_to_series(album_id):
     """Add album to series"""
     album = ImageAlbum.query.get_or_404(album_id)
@@ -209,6 +218,7 @@ def add_to_series(album_id):
     return redirect(request.referrer)
 
 @album_bp.route('/remove_from_series/<int:album_id>', methods=['POST'])
+@login_required
 def remove_from_series(album_id):
     """Remove album from series"""
     album = ImageAlbum.query.get_or_404(album_id)
@@ -217,6 +227,7 @@ def remove_from_series(album_id):
     return redirect(request.referrer)
 
 @album_bp.route('/toggle_favorite/<type>/<int:id>', methods=['POST'])
+@login_required
 def toggle_favorite(type, id):
     """Toggle favorite status"""
     if type == 'album':
@@ -231,6 +242,7 @@ def toggle_favorite(type, id):
     return redirect(request.referrer)
 
 @album_bp.route('/add_tag/<type>/<int:id>', methods=['POST'])
+@login_required
 def add_tag(type, id):
     """Add tag to item"""
     tag_name = request.form.get('tag_name')
@@ -256,6 +268,7 @@ def add_tag(type, id):
     return redirect(request.referrer)
 
 @album_bp.route('/remove_tag/<type>/<int:id>', methods=['POST'])
+@login_required
 def remove_tag(type, id):
     """Remove tag from item"""
     tag_id = request.form.get('tag_id')

@@ -1,16 +1,19 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required
 from app import db
 from app.models import Tag
 
 tags_bp = Blueprint('tags', __name__, url_prefix='/tags')
 
 @tags_bp.route('/')
+@login_required
 def manage_tags():
     """List all tags for management and filtering"""
     all_tags = Tag.query.order_by(Tag.name).all()
     return render_template('tags.html', tags=all_tags)
 
 @tags_bp.route('/edit/<int:id>', methods=['POST'])
+@login_required
 def edit_tag(id):
     """Edit tag name"""
     tag = Tag.query.get_or_404(id)
@@ -29,6 +32,7 @@ def edit_tag(id):
     return redirect(url_for('tags.manage_tags'))
 
 @tags_bp.route('/delete/<int:id>', methods=['POST'])
+@login_required
 def delete_tag(id):
     """Delete tag"""
     tag = Tag.query.get_or_404(id)

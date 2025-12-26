@@ -3,6 +3,7 @@ import os
 import uuid
 import threading
 from flask import Blueprint, request, jsonify, redirect, url_for, current_app, render_template
+from flask_login import login_required
 from werkzeug.utils import secure_filename
 from app import db
 from app.services import EncryptionService, PDFProcessor, ZIPProcessor, ImageService
@@ -11,6 +12,7 @@ from app.routes.api import update_progress
 upload_bp = Blueprint('upload', __name__, url_prefix='/upload')
 
 @upload_bp.route('/', methods=['GET'])
+@login_required
 def upload_page():
     """Render upload page"""
     return render_template('upload.html')
@@ -76,6 +78,7 @@ def process_zip_background(task_id, temp_zip_path, original_filename):
             update_progress(task_id, 'error', 0, str(e))
 
 @upload_bp.route('/pdf', methods=['POST'])
+@login_required
 def upload_pdf():
     """Handle PDF upload"""
     if 'file' not in request.files:
@@ -99,6 +102,7 @@ def upload_pdf():
     return jsonify({'task_id': task_id})
 
 @upload_bp.route('/zip', methods=['POST'])
+@login_required
 def upload_zip():
     """Handle ZIP upload"""
     if 'file' not in request.files:
@@ -122,6 +126,7 @@ def upload_zip():
     return jsonify({'task_id': task_id})
 
 @upload_bp.route('/folder', methods=['POST'])
+@login_required
 def upload_folder():
     """Handle folder upload"""
     if 'files' not in request.files:

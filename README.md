@@ -1,214 +1,246 @@
 # 📚 Comic Album Manager
 
-Ứng dụng web Flask để quản lý và xem truyện tranh/album ảnh với tính năng mã hóa bảo mật.
+[🇻🇳 Tiếng Việt](README.vi.md)
 
-## ✨ Tính năng chính
+A Flask web application for managing and viewing comics/image albums with encryption security.
 
-- **📤 Upload đa dạng**: Hỗ trợ upload folder ảnh, file PDF, file ZIP
-- **🔐 Mã hóa bảo mật**: Tất cả ảnh được mã hóa với Fernet (AES-128)
-- **📖 Quản lý Series**: Nhóm các album/chapter thành series
-- **🏷️ Tags & Favorites**: Gắn thẻ và đánh dấu yêu thích cho album/series
-- **🖼️ Viewer ảnh**: Xem ảnh với giao diện thân thiện, ẩn header khi cuộn
-- **📱 Responsive**: Giao diện tương thích mobile
+## ✨ Key Features
 
-## 🏗️ Cấu trúc dự án
+- **📤 Multiple Upload Formats**: Support for image folders, PDF files, and ZIP archives
+- **🔐 Encrypted Storage**: All images are encrypted using Fernet (AES-128-CBC)
+- **📖 Series Management**: Organize albums/chapters into series
+- **🏷️ Tags & Favorites**: Tag and bookmark albums/series for easy access
+- **🖼️ Image Viewer**: Smooth viewing experience with auto-hiding header on scroll
+- **👤 User Authentication**: Login system with "Remember Me" functionality
+- **📱 Responsive Design**: Mobile-friendly interface
+
+## 🛠️ Tech Stack
+
+- **Backend**: Flask, Flask-SQLAlchemy, Flask-Login
+- **Database**: SQLite
+- **Encryption**: Fernet (cryptography library)
+- **PDF Processing**: pdf2image + poppler-utils
+- **Frontend**: Jinja2 templates, CSS, JavaScript
+
+## 🏗️ Project Structure
 
 ```
 comic-album-manager/
-├── app/                          # Ứng dụng Flask chính
+├── app/                          # Main Flask application
 │   ├── __init__.py               # Application factory
 │   ├── models/                   # Database models (SQLAlchemy)
-│   │   ├── comic_series.py       # Model ComicSeries
-│   │   ├── image_album.py        # Model ImageAlbum
-│   │   ├── image_file.py         # Model ImageFile
-│   │   └── tag.py                # Model Tag
+│   │   ├── comic_series.py       # ComicSeries model
+│   │   ├── image_album.py        # ImageAlbum model
+│   │   ├── image_file.py         # ImageFile model
+│   │   ├── user.py               # User model
+│   │   └── tag.py                # Tag model
 │   ├── routes/                   # Route blueprints
-│   │   ├── main.py               # Trang chủ
-│   │   ├── upload.py             # Upload file/folder
-│   │   ├── series.py             # Quản lý series
-│   │   ├── album.py              # Quản lý album
-│   │   ├── tags.py               # Quản lý tags
+│   │   ├── main.py               # Home page
+│   │   ├── auth.py               # Authentication (login/signup/logout)
+│   │   ├── upload.py             # File/folder upload
+│   │   ├── series.py             # Series management
+│   │   ├── album.py              # Album management
+│   │   ├── tags.py               # Tags management
 │   │   └── api.py                # REST API endpoints
 │   ├── services/                 # Business logic
-│   │   ├── encryption.py         # Mã hóa/giải mã file
-│   │   ├── image_service.py      # Xử lý ảnh
-│   │   ├── pdf_processor.py      # Xử lý file PDF
-│   │   └── zip_processor.py      # Xử lý file ZIP
-│   ├── utils/                    # Tiện ích
-│   │   ├── sorting.py            # Sắp xếp tự nhiên
-│   │   └── validators.py         # Kiểm tra dữ liệu
+│   │   ├── encryption.py         # File encryption/decryption
+│   │   ├── image_service.py      # Image processing
+│   │   ├── pdf_processor.py      # PDF file processing
+│   │   └── zip_processor.py      # ZIP file processing
+│   ├── utils/                    # Utilities
+│   │   ├── sorting.py            # Natural sorting
+│   │   └── validators.py         # Data validation
 │   ├── templates/                # Jinja2 templates
-│   │   ├── index.html            # Trang chủ
-│   │   ├── upload.html           # Trang upload
-│   │   ├── details.html          # Chi tiết album
-│   │   ├── tags.html             # Quản lý tags
-│   │   └── viewer.html           # Xem ảnh
+│   │   ├── index.html            # Home page
+│   │   ├── login.html            # Login page
+│   │   ├── signup.html           # Signup page
+│   │   ├── upload.html           # Upload page
+│   │   ├── details.html          # Album details
+│   │   ├── tags.html             # Tags management
+│   │   └── viewer.html           # Image viewer
 │   └── static/                   # CSS, JS, assets
 │
-├── config/                       # Cấu hình ứng dụng
-│   ├── base.py                   # Config cơ bản
-│   ├── development.py            # Config dev
-│   ├── production.py             # Config production
-│   └── testing.py                # Config test
+├── config/                       # Application configuration
+│   ├── base.py                   # Base config
+│   ├── development.py            # Development config
+│   ├── production.py             # Production config
+│   └── testing.py                # Testing config
 │
-├── data/                         # Dữ liệu người dùng (gitignored)
-│   ├── albums/                   # Albums đã mã hóa
-│   ├── covers/                   # Ảnh bìa
-│   ├── uploads/                  # File upload tạm
+├── data/                         # User data (gitignored)
+│   ├── albums/                   # Encrypted albums
+│   ├── covers/                   # Cover images
+│   ├── uploads/                  # Temporary uploads
 │   └── instance/                 # SQLite database
 │
-├── scripts/                      # Scripts tiện ích
-├── docs/                         # Tài liệu
+├── scripts/                      # Utility scripts
+├── docs/                         # Documentation
 ├── tests/                        # Unit tests
 │
-├── run.py                        # Entry point
-├── init_db.py                    # Khởi tạo database
+├── run.py                        # Application entry point
+├── init_db.py                    # Database initialization
 ├── pyproject.toml                # Python dependencies
-├── secret.key                    # Khóa mã hóa (tự động tạo)
-└── .env.example                  # Mẫu biến môi trường
+├── secret.key                    # Encryption key (auto-generated)
+└── .env.example                  # Environment variables template
 ```
 
-## 🚀 Cài đặt & Chạy
+## 🚀 Installation & Setup
 
-### Yêu cầu
+### Requirements
 - Python >= 3.12
-- poppler-utils (cho PDF processing)
+- poppler-utils (for PDF processing)
 
-### Cài đặt
+### Installation
 
 ```bash
-# Clone và vào thư mục
+# Clone and enter directory
+git clone <repository-url>
 cd comic-album-manager
 
-# Cài đặt dependencies (với uv)
+# Install dependencies (with uv - recommended)
 uv sync
 
-# Hoặc với pip
+# Or with pip
 pip install -e .
 
-# Cài poppler (cho xử lý PDF)
+# Install poppler (for PDF processing)
 sudo apt install poppler-utils  # Ubuntu/Debian
 brew install poppler            # macOS
 ```
 
-### Chạy ứng dụng
+### Running the Application
 
 ```bash
-# Development
+# Development mode
 python run.py
 
-# Hoặc với Flask
+# Or with Flask CLI
 flask run --host=0.0.0.0 --port=5000
 ```
 
-Truy cập: http://localhost:5000
+Access the app at: http://localhost:5000
 
 ## 📦 Database Models
 
-### ComicSeries
-| Trường | Kiểu | Mô tả |
-|--------|------|-------|
+### User
+| Field | Type | Description |
+|-------|------|-------------|
 | `id` | Integer | Primary key |
-| `name` | String(300) | Tên series |
-| `cover_image` | String(300) | Ảnh bìa |
-| `is_completed` | Boolean | Đã hoàn thành chưa |
-| `is_favorite` | Boolean | Đánh dấu yêu thích |
-| `albums` | Relationship | Danh sách album |
-| `tags` | Relationship | Danh sách tags |
+| `username` | String(80) | Unique username |
+| `password_hash` | String(256) | Hashed password |
+
+### ComicSeries
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | Integer | Primary key |
+| `name` | String(300) | Series name |
+| `cover_image` | String(300) | Cover image path |
+| `is_completed` | Boolean | Completion status |
+| `is_favorite` | Boolean | Favorite flag |
+| `albums` | Relationship | List of albums |
+| `tags` | Relationship | List of tags |
 
 ### ImageAlbum
-| Trường | Kiểu | Mô tả |
-|--------|------|-------|
+| Field | Type | Description |
+|-------|------|-------------|
 | `id` | Integer | Primary key |
-| `name` | String(300) | Tên album/chapter |
-| `folder_path` | String(300) | Đường dẫn folder |
-| `cover_image` | String(300) | Ảnh bìa |
-| `series_id` | FK | Thuộc series nào |
-| `is_favorite` | Boolean | Đánh dấu yêu thích |
-| `tags` | Relationship | Danh sách tags |
+| `name` | String(300) | Album/chapter name |
+| `folder_path` | String(300) | Folder path |
+| `cover_image` | String(300) | Cover image path |
+| `series_id` | FK | Parent series |
+| `is_favorite` | Boolean | Favorite flag |
+| `tags` | Relationship | List of tags |
 
 ### Tag
-| Trường | Kiểu | Mô tả |
-|--------|------|-------|
+| Field | Type | Description |
+|-------|------|-------------|
 | `id` | Integer | Primary key |
-| `name` | String(50) | Tên tag |
+| `name` | String(50) | Tag name |
 
 ### ImageFile
-| Trường | Kiểu | Mô tả |
-|--------|------|-------|
+| Field | Type | Description |
+|-------|------|-------------|
 | `id` | Integer | Primary key |
-| `filename` | String | Tên file |
-| `album_id` | FK | Thuộc album nào |
+| `filename` | String | Filename |
+| `album_id` | FK | Parent album |
 
-## 🔐 Bảo mật
+## 🔐 Security
 
-- Tất cả ảnh được mã hóa với **Fernet (AES-128-CBC)**
-- Key lưu trong `secret.key` (tự động tạo lần đầu)
-- Ảnh chỉ giải mã khi serve cho client
-- **⚠️ Quan trọng**: Backup `secret.key` - mất key = mất dữ liệu!
+- All images are encrypted with **Fernet (AES-128-CBC)**
+- Encryption key stored in `secret.key` (auto-generated on first run)
+- Images are decrypted only when served to the client
+- User passwords are hashed before storage
+- "Remember Me" feature uses secure session cookies
+- **⚠️ Important**: Backup your `secret.key` - losing it means losing all encrypted data!
 
 ## 🛠️ API Endpoints
 
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| GET | `/` | Trang chủ (Thư viện) |
-| GET | `/upload/` | Trang Upload |
-| GET | `/tags/` | Quản lý Tags |
-| GET | `/album/<id>` | Chi tiết album |
-| GET | `/viewer/<id>` | Xem ảnh album |
-| POST | `/upload/folder` | Upload folder ảnh |
-| POST | `/upload/pdf` | Upload file PDF |
-| POST | `/upload/zip` | Upload file ZIP |
-| GET | `/api/image/<album_id>/<filename>` | Lấy ảnh (decrypt) |
-| GET | `/series/<id>` | Chi tiết series |
-| POST | `/series/create` | Tạo series mới |
-| POST | `/album/toggle_favorite/<type>/<id>` | Toggle yêu thích |
-| POST | `/album/add_tag/<type>/<id>` | Thêm tag |
-| POST | `/album/remove_tag/<type>/<id>` | Xóa tag |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | Home page (Library) |
+| GET | `/login` | Login page |
+| POST | `/login` | Authenticate user |
+| GET | `/signup` | Signup page |
+| POST | `/signup` | Register new user |
+| GET | `/logout` | Logout user |
+| GET | `/upload/` | Upload page |
+| GET | `/tags/` | Tags management |
+| GET | `/album/<id>` | Album details |
+| GET | `/viewer/<id>` | Image viewer |
+| POST | `/upload/folder` | Upload image folder |
+| POST | `/upload/pdf` | Upload PDF file |
+| POST | `/upload/zip` | Upload ZIP file |
+| GET | `/api/image/<album_id>/<filename>` | Get image (decrypted) |
+| GET | `/series/<id>` | Series details |
+| POST | `/series/create` | Create new series |
+| POST | `/album/toggle_favorite/<type>/<id>` | Toggle favorite |
+| POST | `/album/add_tag/<type>/<id>` | Add tag |
+| POST | `/album/remove_tag/<type>/<id>` | Remove tag |
 
-## 📝 Cấu hình
+## 📝 Configuration
 
-Tạo file `.env` từ `.env.example`:
+Create `.env` file from template:
 
 ```bash
 cp .env.example .env
 ```
 
-Các biến môi trường:
+Environment variables:
 
-| Biến | Mô tả | Mặc định |
-|------|-------|----------|
+| Variable | Description | Default |
+|----------|-------------|---------|
 | `SECRET_KEY` | Flask secret key | dev-secret-key |
 | `DATABASE_URL` | Database connection | sqlite:///data/instance/database.db |
-| `FLASK_ENV` | Môi trường | development |
+| `FLASK_ENV` | Environment | development |
 
 ## 🧪 Testing
 
 ```bash
-# Chạy tests
+# Run tests
 pytest tests/
 
-# Với coverage
+# With coverage
 pytest --cov=app tests/
 ```
 
-## 📋 Workflow sử dụng
+## 📋 Usage Workflow
 
-1. **Upload album**: Vào trang Upload → Chọn loại (folder/PDF/ZIP)
-2. **Tạo series**: Vào trang Upload → Tạo Series → Đặt tên
-3. **Gán album vào series**: Chi tiết album → Chọn series
-4. **Quản lý Tags**: Vào trang Tags để sửa/xóa, hoặc thêm tag trực tiếp trong trang chi tiết
-5. **Yêu thích**: Click icon ngôi sao để thêm vào danh sách yêu thích
-6. **Xem truyện**: Click album → Viewer (Header ẩn khi cuộn, nút Home để quay lại)
+1. **Register/Login**: Create an account or login (check "Remember Me" to stay logged in)
+2. **Upload album**: Go to Upload → Choose type (folder/PDF/ZIP)
+3. **Create series**: Go to Upload → Create Series → Enter name
+4. **Assign album to series**: Album details → Select series
+5. **Manage Tags**: Go to Tags page to edit/delete, or add tags directly in details page
+6. **Favorites**: Click star icon to add to favorites list
+7. **View content**: Click album → Viewer (Header hides on scroll, Home button to return)
 
 ## 🔧 Troubleshooting
 
-| Vấn đề | Giải pháp |
-|--------|-----------|
-| Database lỗi | Xóa `data/instance/database.db`, chạy lại |
-| Import error | Chạy từ thư mục gốc project |
-| PDF không convert | Cài `poppler-utils` |
-| Ảnh không hiển thị | Kiểm tra `secret.key` còn nguyên |
+| Issue | Solution |
+|-------|----------|
+| Database error | Delete `data/instance/database.db`, restart app |
+| Import error | Run from project root directory |
+| PDF not converting | Install `poppler-utils` |
+| Images not displaying | Check `secret.key` exists and is unchanged |
+| Login issues | Clear browser cookies, try again |
 
 ## 📄 License
 

@@ -1,11 +1,13 @@
 """Series routes - Comic series management"""
 from flask import Blueprint, request, redirect, url_for
+from flask_login import login_required
 from app import db
 from app.models import ComicSeries
 
 series_bp = Blueprint('series', __name__, url_prefix='/series')
 
 @series_bp.route('/create', methods=['POST'])
+@login_required
 def create_series():
     """Create new series"""
     name = request.form.get('series_name')
@@ -16,6 +18,7 @@ def create_series():
     return redirect(url_for('main.index'))
 
 @series_bp.route('/toggle/<int:id>', methods=['POST'])
+@login_required
 def toggle_status(id):
     """Toggle series completion status"""
     series = ComicSeries.query.get_or_404(id)
