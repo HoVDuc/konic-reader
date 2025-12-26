@@ -1,20 +1,20 @@
-# 📚 Comic Album Manager
+# Comic Album Manager
 
-[🇬🇧 English](README.md)
+[**English**](README.md) | **Tiếng Việt**
 
 Ứng dụng web Flask để quản lý và xem truyện tranh/album ảnh với tính năng mã hóa bảo mật.
 
-## ✨ Tính năng chính
+## Tính năng chính
 
-- **📤 Upload đa dạng**: Hỗ trợ upload folder ảnh, file PDF, file ZIP
-- **🔐 Mã hóa bảo mật**: Tất cả ảnh được mã hóa với Fernet (AES-128-CBC)
-- **📖 Quản lý Series**: Nhóm các album/chapter thành series
-- **🏷️ Tags & Favorites**: Gắn thẻ và đánh dấu yêu thích cho album/series
-- **🖼️ Viewer ảnh**: Xem ảnh với giao diện thân thiện, ẩn header khi cuộn
-- **👤 Xác thực người dùng**: Hệ thống đăng nhập với tính năng "Ghi nhớ đăng nhập"
-- **📱 Responsive**: Giao diện tương thích mobile
+- **Upload đa dạng**: Hỗ trợ upload folder ảnh, file PDF, file ZIP
+- **Mã hóa bảo mật**: Tất cả ảnh được mã hóa với Fernet (AES-128-CBC)
+- **Quản lý Series**: Nhóm các album/chapter thành series
+- **Tags & Favorites**: Gắn thẻ và đánh dấu yêu thích cho album/series
+- **Viewer ảnh**: Xem ảnh với giao diện thân thiện, ẩn header khi cuộn
+- **Xác thực người dùng**: Hệ thống đăng nhập với tính năng "Ghi nhớ đăng nhập"
+- **Responsive**: Giao diện tương thích mobile
 
-## 🛠️ Công nghệ sử dụng
+## Công nghệ sử dụng
 
 - **Backend**: Flask, Flask-SQLAlchemy, Flask-Login
 - **Database**: SQLite
@@ -22,7 +22,7 @@
 - **Xử lý PDF**: pdf2image + poppler-utils
 - **Frontend**: Jinja2 templates, CSS, JavaScript
 
-## 🏗️ Cấu trúc dự án
+## Cấu trúc dự án
 
 ```
 comic-album-manager/
@@ -83,7 +83,7 @@ comic-album-manager/
 └── .env.example                  # Mẫu biến môi trường
 ```
 
-## 🚀 Cài đặt & Chạy
+## Cài đặt & Chạy
 
 ### Yêu cầu
 - Python >= 3.12
@@ -119,7 +119,7 @@ flask run --host=0.0.0.0 --port=5000
 
 Truy cập: http://localhost:5000
 
-## 📦 Database Models
+## Database Models
 
 ### User
 | Trường | Kiểu | Mô tả |
@@ -163,7 +163,7 @@ Truy cập: http://localhost:5000
 | `filename` | String | Tên file |
 | `album_id` | FK | Thuộc album nào |
 
-## 🔐 Bảo mật
+## Bảo mật
 
 - Tất cả ảnh được mã hóa với **Fernet (AES-128-CBC)**
 - Key lưu trong `secret.key` (tự động tạo lần đầu)
@@ -172,7 +172,7 @@ Truy cập: http://localhost:5000
 - Tính năng "Ghi nhớ đăng nhập" sử dụng secure session cookies
 - **⚠️ Quan trọng**: Backup `secret.key` - mất key = mất dữ liệu!
 
-## 🛠️ API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
@@ -196,7 +196,7 @@ Truy cập: http://localhost:5000
 | POST | `/album/add_tag/<type>/<id>` | Thêm tag |
 | POST | `/album/remove_tag/<type>/<id>` | Xóa tag |
 
-## 📝 Cấu hình
+## Cấu hình
 
 Tạo file `.env` từ `.env.example`:
 
@@ -212,7 +212,7 @@ Các biến môi trường:
 | `DATABASE_URL` | Database connection | sqlite:///data/instance/database.db |
 | `FLASK_ENV` | Môi trường | development |
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Chạy tests
@@ -222,7 +222,7 @@ pytest tests/
 pytest --cov=app tests/
 ```
 
-## 📋 Workflow sử dụng
+## Workflow sử dụng
 
 1. **Đăng ký/Đăng nhập**: Tạo tài khoản hoặc đăng nhập (tích "Ghi nhớ đăng nhập" để không cần đăng nhập lại)
 2. **Upload album**: Vào trang Upload → Chọn loại (folder/PDF/ZIP)
@@ -232,7 +232,7 @@ pytest --cov=app tests/
 6. **Yêu thích**: Click icon ngôi sao để thêm vào danh sách yêu thích
 7. **Xem truyện**: Click album → Viewer (Header ẩn khi cuộn, nút Home để quay lại)
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 | Vấn đề | Giải pháp |
 |--------|-----------|
@@ -242,6 +242,6 @@ pytest --cov=app tests/
 | Ảnh không hiển thị | Kiểm tra `secret.key` còn nguyên |
 | Lỗi đăng nhập | Xóa cookies trình duyệt, thử lại |
 
-## 📄 License
+## License
 
 MIT License

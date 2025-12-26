@@ -1,20 +1,20 @@
-# 📚 Comic Album Manager
+# Comic Album Manager
 
-[🇻🇳 Tiếng Việt](README.vi.md)
+**English** | [**Vietnamese**](README.vi.md)
 
 A Flask web application for managing and viewing comics/image albums with encryption security.
 
-## ✨ Key Features
+## Key Features
 
-- **📤 Multiple Upload Formats**: Support for image folders, PDF files, and ZIP archives
-- **🔐 Encrypted Storage**: All images are encrypted using Fernet (AES-128-CBC)
-- **📖 Series Management**: Organize albums/chapters into series
-- **🏷️ Tags & Favorites**: Tag and bookmark albums/series for easy access
-- **🖼️ Image Viewer**: Smooth viewing experience with auto-hiding header on scroll
-- **👤 User Authentication**: Login system with "Remember Me" functionality
-- **📱 Responsive Design**: Mobile-friendly interface
+- **Multiple Upload Formats**: Support for image folders, PDF files, and ZIP archives
+- **Encrypted Storage**: All images are encrypted using Fernet (AES-128-CBC)
+- **Series Management**: Organize albums/chapters into series
+- **Tags & Favorites**: Tag and bookmark albums/series for easy access
+- **Image Viewer**: Smooth viewing experience with auto-hiding header on scroll
+- **User Authentication**: Login system with "Remember Me" functionality
+- **Responsive Design**: Mobile-friendly interface
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Backend**: Flask, Flask-SQLAlchemy, Flask-Login
 - **Database**: SQLite
@@ -22,7 +22,7 @@ A Flask web application for managing and viewing comics/image albums with encryp
 - **PDF Processing**: pdf2image + poppler-utils
 - **Frontend**: Jinja2 templates, CSS, JavaScript
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 comic-album-manager/
@@ -83,7 +83,7 @@ comic-album-manager/
 └── .env.example                  # Environment variables template
 ```
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### Requirements
 - Python >= 3.12
@@ -119,7 +119,7 @@ flask run --host=0.0.0.0 --port=5000
 
 Access the app at: http://localhost:5000
 
-## 📦 Database Models
+## Database Models
 
 ### User
 | Field | Type | Description |
@@ -163,7 +163,7 @@ Access the app at: http://localhost:5000
 | `filename` | String | Filename |
 | `album_id` | FK | Parent album |
 
-## 🔐 Security
+## Security
 
 - All images are encrypted with **Fernet (AES-128-CBC)**
 - Encryption key stored in `secret.key` (auto-generated on first run)
@@ -172,7 +172,7 @@ Access the app at: http://localhost:5000
 - "Remember Me" feature uses secure session cookies
 - **⚠️ Important**: Backup your `secret.key` - losing it means losing all encrypted data!
 
-## 🛠️ API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -196,7 +196,7 @@ Access the app at: http://localhost:5000
 | POST | `/album/add_tag/<type>/<id>` | Add tag |
 | POST | `/album/remove_tag/<type>/<id>` | Remove tag |
 
-## 📝 Configuration
+## Configuration
 
 Create `.env` file from template:
 
@@ -212,7 +212,7 @@ Environment variables:
 | `DATABASE_URL` | Database connection | sqlite:///data/instance/database.db |
 | `FLASK_ENV` | Environment | development |
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run tests
@@ -222,7 +222,7 @@ pytest tests/
 pytest --cov=app tests/
 ```
 
-## 📋 Usage Workflow
+## Usage Workflow
 
 1. **Register/Login**: Create an account or login (check "Remember Me" to stay logged in)
 2. **Upload album**: Go to Upload → Choose type (folder/PDF/ZIP)
@@ -232,7 +232,7 @@ pytest --cov=app tests/
 6. **Favorites**: Click star icon to add to favorites list
 7. **View content**: Click album → Viewer (Header hides on scroll, Home button to return)
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
@@ -242,6 +242,6 @@ pytest --cov=app tests/
 | Images not displaying | Check `secret.key` exists and is unchanged |
 | Login issues | Clear browser cookies, try again |
 
-## 📄 License
+## License
 
 MIT License
