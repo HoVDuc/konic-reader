@@ -6,13 +6,15 @@ A Flask web application for managing and viewing comics/image albums with encryp
 
 ## Key Features
 
-- **Multiple Upload Formats**: Support for image folders, PDF files, and ZIP archives
+- **Multiple Upload Formats**: Support for image folders, PDF files, ZIP archives, and torrent files
 - **Encrypted Storage**: All images are encrypted using Fernet (AES-128-CBC)
 - **Series Management**: Organize albums/chapters into series
 - **Tags & Favorites**: Tag and bookmark albums/series for easy access
+- **Sorting Options**: Sort by name or upload date
 - **Image Viewer**: Smooth viewing experience with auto-hiding header on scroll
 - **User Authentication**: Login system with "Remember Me" functionality
 - **Responsive Design**: Mobile-friendly interface
+- **qBittorrent Integration**: Download and import from torrent files
 
 ## Tech Stack
 
@@ -46,7 +48,8 @@ comic-album-manager/
 │   │   ├── encryption.py         # File encryption/decryption
 │   │   ├── image_service.py      # Image processing
 │   │   ├── pdf_processor.py      # PDF file processing
-│   │   └── zip_processor.py      # ZIP file processing
+│   │   ├── zip_processor.py      # ZIP file processing
+│   │   └── torrent_service.py    # Torrent processing (experimental)
 │   ├── utils/                    # Utilities
 │   │   ├── sorting.py            # Natural sorting
 │   │   └── validators.py         # Data validation
@@ -136,6 +139,7 @@ Access the app at: http://localhost:5000
 | `cover_image` | String(300) | Cover image path |
 | `is_completed` | Boolean | Completion status |
 | `is_favorite` | Boolean | Favorite flag |
+| `created_at` | DateTime | Upload timestamp |
 | `albums` | Relationship | List of albums |
 | `tags` | Relationship | List of tags |
 
@@ -148,6 +152,7 @@ Access the app at: http://localhost:5000
 | `cover_image` | String(300) | Cover image path |
 | `series_id` | FK | Parent series |
 | `is_favorite` | Boolean | Favorite flag |
+| `created_at` | DateTime | Upload timestamp |
 | `tags` | Relationship | List of tags |
 
 ### Tag
@@ -174,27 +179,58 @@ Access the app at: http://localhost:5000
 
 ## API Endpoints
 
+### Main Routes
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/` | Home page (Library) |
+| GET | `/` | Home page (Library) - supports `?sort=name\|date&tag=tag_name&favorites=true` |
 | GET | `/login` | Login page |
 | POST | `/login` | Authenticate user |
 | GET | `/signup` | Signup page |
 | POST | `/signup` | Register new user |
 | GET | `/logout` | Logout user |
+
+### Upload Routes (`/upload`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
 | GET | `/upload/` | Upload page |
-| GET | `/tags/` | Tags management |
-| GET | `/album/<id>` | Album details |
-| GET | `/viewer/<id>` | Image viewer |
-| POST | `/upload/folder` | Upload image folder |
-| POST | `/upload/pdf` | Upload PDF file |
-| POST | `/upload/zip` | Upload ZIP file |
-| GET | `/api/image/<album_id>/<filename>` | Get image (decrypted) |
-| GET | `/series/<id>` | Series details |
-| POST | `/series/create` | Create new series |
+| POST | `/upload/folder` | Upload image folder (supports multiple folders) |
+| POST | `/upload/pdf` | Upload PDF file (background processing) |
+| POST | `/upload/zip` | Upload ZIP file (background processing) |
+
+### Album Routes (`/album`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/album/<id>` | View album in reader |
+| GET | `/album/details/<type>/<id>` | Album/series details page |
+| GET | `/album/image/<album_id>/<filename>` | Get decrypted image |
+| GET | `/album/cover/<filename>` | Get cover image |
+| POST | `/album/rename/<type>/<id>` | Rename album/series |
+| POST | `/album/change_cover/<type>/<id>` | Change cover image |
+| POST | `/album/set_cover_from_page/<album_id>/<filename>` | Set cover from album page |
+| POST | `/album/delete/<type>/<id>` | Delete album/series |
+| POST | `/album/add_to_series/<album_id>` | Add album to series |
+| POST | `/album/remove_from_series/<album_id>` | Remove album from series |
 | POST | `/album/toggle_favorite/<type>/<id>` | Toggle favorite |
 | POST | `/album/add_tag/<type>/<id>` | Add tag |
 | POST | `/album/remove_tag/<type>/<id>` | Remove tag |
+
+### Series Routes (`/series`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/series/create` | Create new series |
+| POST | `/series/toggle/<id>` | Toggle series completion status |
+
+### Tags Routes (`/tags`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/tags/` | Tags management page |
+| POST | `/tags/edit/<id>` | Edit tag name |
+| POST | `/tags/delete/<id>` | Delete tag |
+
+### API Routes (`/api`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/status/<task_id>` | Get processing status for background tasks |
 
 ## Configuration
 
@@ -226,11 +262,37 @@ pytest --cov=app tests/
 
 1. **Register/Login**: Create an account or login (check "Remember Me" to stay logged in)
 2. **Upload album**: Go to Upload → Choose type (folder/PDF/ZIP)
+   - Folder: Select multiple image files or folders
+   - PDF: Will be converted to images (requires poppler-utils)
+   - ZIP: Extract and encrypt images automatically
 3. **Create series**: Go to Upload → Create Series → Enter name
-4. **Assign album to series**: Album details → Select series
+4. **Assign album to series**: Album details → Select series from dropdown
+   - First chapter's cover will automatically become series cover
 5. **Manage Tags**: Go to Tags page to edit/delete, or add tags directly in details page
 6. **Favorites**: Click star icon to add to favorites list
-7. **View content**: Click album → Viewer (Header hides on scroll, Home button to return)
+7. **View content**: Click album → Viewer
+   - Header auto-hides on scroll down, shows on scroll up
+   - Navigate between chapters with prev/next buttons
+   - Click Home button to return to library
+
+## Features in Detail
+
+### Library View
+- Filter by tag or favorites
+- Sort by name or upload date
+- View series and standalone albums
+
+### Album Details
+- Rename album/series
+- Change or set cover image
+- Add/remove tags
+- Toggle favorite status
+- Assign to series
+
+### Image Viewer
+- Smooth scrolling through images
+- Auto-hiding header for distraction-free reading
+- Navigate between chapters in a series
 
 ## Troubleshooting
 

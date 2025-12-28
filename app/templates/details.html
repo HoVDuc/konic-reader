@@ -36,7 +36,39 @@
             .header-area{flex-direction:column}
             .preview-area{width:100%;height:200px;border-right:none;border-bottom:1px solid #ddd}
         }
+        .page-selector-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;overflow-y:auto;padding:20px}
+        .page-selector-content{background:white;padding:20px;border-radius:10px;max-width:900px;width:100%;margin:0 auto;max-height:90vh;overflow-y:auto}
+        .page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:20px}
+        .page-item{cursor:pointer;border:3px solid transparent;border-radius:5px;overflow:hidden;transition:border-color 0.2s}
+        .page-item:hover{border-color:#007bff}
+        .page-item img{width:100%;height:auto;display:block}
+        .page-item.selected{border-color:#28a745}
     </style>
+    <script>
+    function showPageSelector() {
+        document.getElementById('page-selector-modal').style.display = 'flex';
+    }
+    function closePageSelector() {
+        document.getElementById('page-selector-modal').style.display = 'none';
+    }
+    function selectPage(albumId, filename) {
+        if (!confirm('Đặt trang này làm ảnh bìa?')) return;
+        fetch('/album/set_cover_from_page/' + albumId + '/' + filename, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Đã đặt ảnh bìa!');
+                location.reload();
+            } else {
+                alert('Lỗi: ' + data.error);
+            }
+        })
+        .catch(err => alert('Lỗi: ' + err));
+    }
+    </script>
 </head>
 <body>
     <nav class="navbar">
@@ -105,6 +137,9 @@
                     <div style="display:flex;gap:5px;flex-wrap:wrap">
                         <input type="file" name="cover_file" accept="image/*" style="width:100%">
                         <button type="submit" class="btn-sm btn-save" style="flex-grow:1">Upload Mới</button>
+                        {% if type == 'album' %}
+                        <button type="button" onclick="showPageSelector()" class="btn-sm" style="background:#17a2b8;flex-grow:1">Chọn từ trang</button>
+                        {% endif %}
                         {% if has_cover %}
                         <button type="submit" name="action" value="delete_cover" class="btn-sm" style="background:#6c757d;flex-grow:1">Dùng ảnh mặc định</button>
                         {% endif %}
@@ -214,5 +249,22 @@
         </div>
         {% endif %}
     </div>
+
+    {% if type == 'album' %}
+    <div id="page-selector-modal" class="page-selector-modal">
+        <div class="page-selector-content">
+            <h3>Chọn trang làm ảnh bìa</h3>
+            <button onclick="closePageSelector()" class="btn-sm" style="background:#6c757d;float:right">Đóng</button>
+            <div class="page-grid">
+                {% for img in item.images|sort(attribute='filename') %}
+                <div class="page-item" onclick="selectPage({{ id }}, '{{ img.filename }}')">
+                    <img src="{{ url_for('album.get_image', album_id=id, filename=img.filename) }}" alt="Page">
+                    <div style="text-align:center;padding:5px;background:#eee;font-size:11px">{{ loop.index }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </body>
 </html>

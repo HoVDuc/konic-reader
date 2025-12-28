@@ -13,7 +13,10 @@
         .nav-link:hover, .nav-link.active { color: #007bff; }
         
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header-controls { display: none; } 
+        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .sort-controls { display: flex; gap: 10px; align-items: center; }
+        .sort-label { font-size: 14px; color: #666; }
+        .sort-select { padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; background: white; font-size: 14px; }
         
         .tags-container { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 20px; align-items: center;}
         .tag-pill { padding: 5px 12px; background: #eee; border-radius: 15px; font-size: 12px; color: #555; text-decoration: none; transition: all 0.2s;}
@@ -60,8 +63,12 @@
     <div class="container">
         <div class="header-controls">
             <h2><i class="fas fa-archive"></i> Thư viện của tôi (Secure)</h2>
-            <div>
-                <a href="{{ url_for('upload.upload_page') }}" class="btn btn-primary"><i class="fas fa-cloud-upload-alt"></i> Upload & Tạo mới</a>
+            <div class="sort-controls">
+                <span class="sort-label">Sắp xếp:</span>
+                <select class="sort-select" onchange="changeSort(this.value)">
+                    <option value="name" {% if current_sort == 'name' %}selected{% endif %}>Theo tên</option>
+                    <option value="date" {% if current_sort == 'date' %}selected{% endif %}>Theo ngày upload</option>
+                </select>
             </div>
         </div>
         
@@ -130,5 +137,13 @@
             {% endfor %}
         </div>
     </div>
+
+    <script>
+    function changeSort(sortValue) {
+        const url = new URL(window.location);
+        url.searchParams.set('sort', sortValue);
+        window.location.href = url.toString();
+    }
+    </script>
 </body>
 </html>

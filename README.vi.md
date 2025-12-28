@@ -46,7 +46,8 @@ comic-album-manager/
 │   │   ├── encryption.py         # Mã hóa/giải mã file
 │   │   ├── image_service.py      # Xử lý ảnh
 │   │   ├── pdf_processor.py      # Xử lý file PDF
-│   │   └── zip_processor.py      # Xử lý file ZIP
+│   │   ├── zip_processor.py      # Xử lý file ZIP
+│   │   └── torrent_service.py    # Xử lý torrent (thử nghiệm)
 │   ├── utils/                    # Tiện ích
 │   │   ├── sorting.py            # Sắp xếp tự nhiên
 │   │   └── validators.py         # Kiểm tra dữ liệu
@@ -174,27 +175,58 @@ Truy cập: http://localhost:5000
 
 ## API Endpoints
 
+### Routes chính
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/` | Trang chủ (Thư viện) |
+| GET | `/` | Trang chủ (Thư viện) - hỗ trợ `?sort=name\|date&tag=tag_name&favorites=true` |
 | GET | `/login` | Trang đăng nhập |
 | POST | `/login` | Xác thực người dùng |
 | GET | `/signup` | Trang đăng ký |
 | POST | `/signup` | Đăng ký tài khoản mới |
 | GET | `/logout` | Đăng xuất |
+
+### Upload Routes (`/upload`)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
 | GET | `/upload/` | Trang Upload |
-| GET | `/tags/` | Quản lý Tags |
-| GET | `/album/<id>` | Chi tiết album |
-| GET | `/viewer/<id>` | Xem ảnh album |
-| POST | `/upload/folder` | Upload folder ảnh |
-| POST | `/upload/pdf` | Upload file PDF |
-| POST | `/upload/zip` | Upload file ZIP |
-| GET | `/api/image/<album_id>/<filename>` | Lấy ảnh (decrypt) |
-| GET | `/series/<id>` | Chi tiết series |
-| POST | `/series/create` | Tạo series mới |
+| POST | `/upload/folder` | Upload folder ảnh (hỗ trợ nhiều folder) |
+| POST | `/upload/pdf` | Upload file PDF (xử lý nền) |
+| POST | `/upload/zip` | Upload file ZIP (xử lý nền) |
+
+### Album Routes (`/album`)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/album/<id>` | Xem album trong reader |
+| GET | `/album/details/<type>/<id>` | Trang chi tiết album/series |
+| GET | `/album/image/<album_id>/<filename>` | Lấy ảnh (đã giải mã) |
+| GET | `/album/cover/<filename>` | Lấy ảnh bìa |
+| POST | `/album/rename/<type>/<id>` | Đổi tên album/series |
+| POST | `/album/change_cover/<type>/<id>` | Đổi ảnh bìa |
+| POST | `/album/set_cover_from_page/<album_id>/<filename>` | Đặt bìa từ trang trong album |
+| POST | `/album/delete/<type>/<id>` | Xóa album/series |
+| POST | `/album/add_to_series/<album_id>` | Thêm album vào series |
+| POST | `/album/remove_from_series/<album_id>` | Xóa album khỏi series |
 | POST | `/album/toggle_favorite/<type>/<id>` | Toggle yêu thích |
 | POST | `/album/add_tag/<type>/<id>` | Thêm tag |
 | POST | `/album/remove_tag/<type>/<id>` | Xóa tag |
+
+### Series Routes (`/series`)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| POST | `/series/create` | Tạo series mới |
+| POST | `/series/toggle/<id>` | Toggle trạng thái hoàn thành |
+
+### Tags Routes (`/tags`)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/tags/` | Trang quản lý Tags |
+| POST | `/tags/edit/<id>` | Sửa tên tag |
+| POST | `/tags/delete/<id>` | Xóa tag |
+
+### API Routes (`/api`)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/api/status/<task_id>` | Lấy trạng thái xử lý cho các tác vụ nền |
 
 ## Cấu hình
 
@@ -226,11 +258,37 @@ pytest --cov=app tests/
 
 1. **Đăng ký/Đăng nhập**: Tạo tài khoản hoặc đăng nhập (tích "Ghi nhớ đăng nhập" để không cần đăng nhập lại)
 2. **Upload album**: Vào trang Upload → Chọn loại (folder/PDF/ZIP)
+   - Folder: Chọn nhiều file ảnh hoặc nhiều folder cùng lúc
+   - PDF: Sẽ được chuyển đổi thành ảnh (cần cài poppler-utils)
+   - ZIP: Giải nén và mã hóa ảnh tự động
 3. **Tạo series**: Vào trang Upload → Tạo Series → Đặt tên
-4. **Gán album vào series**: Chi tiết album → Chọn series
+4. **Gán album vào series**: Chi tiết album → Chọn series từ dropdown
+   - Ảnh bìa của chapter đầu tiên sẽ tự động trở thành bìa series
 5. **Quản lý Tags**: Vào trang Tags để sửa/xóa, hoặc thêm tag trực tiếp trong trang chi tiết
 6. **Yêu thích**: Click icon ngôi sao để thêm vào danh sách yêu thích
-7. **Xem truyện**: Click album → Viewer (Header ẩn khi cuộn, nút Home để quay lại)
+7. **Xem truyện**: Click album → Viewer
+   - Header tự ẩn khi cuộn xuống, hiện khi cuộn lên
+   - Di chuyển giữa các chapter bằng nút prev/next
+   - Nút Home để quay lại thư viện
+
+## Tính năng chi tiết
+
+### Trang thư viện
+- Lọc theo tag hoặc yêu thích
+- Sắp xếp theo tên hoặc ngày upload
+- Xem series và album đơn lẻ
+
+### Chi tiết Album
+- Đổi tên album/series
+- Thay đổi hoặc đặt ảnh bìa
+- Thêm/xóa tags
+- Bật/tắt yêu thích
+- Gán vào series
+
+### Xem ảnh (Viewer)
+- Cuộn mượt qua các ảnh
+- Header tự ẩn để đọc thoải mái
+- Di chuyển giữa các chapter trong series
 
 ## Troubleshooting
 

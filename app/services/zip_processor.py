@@ -55,10 +55,15 @@ class ZIPProcessor:
                     img_data = zip_ref.read(file_in_zip)
                     
                     # Convert to WebP
-                    img = Image.open(io.BytesIO(img_data))
-                    img_byte_arr = io.BytesIO()
-                    img.save(img_byte_arr, format='WEBP', quality=90)
-                    webp_data = img_byte_arr.getvalue()
+                    try:
+                        img = Image.open(io.BytesIO(img_data))
+                        img_byte_arr = io.BytesIO()
+                        img.save(img_byte_arr, format='WEBP', quality=90)
+                        webp_data = img_byte_arr.getvalue()
+                    except Exception as img_error:
+                        print(f"Error converting image {file_in_zip} to WebP: {img_error}")
+                        # Skip this image
+                        continue
                     
                     safe_img_name = f"{count:04d}_extracted.webp"
                     save_path = os.path.join(abs_folder_path, safe_img_name)

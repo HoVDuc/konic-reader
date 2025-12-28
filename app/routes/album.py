@@ -2,7 +2,7 @@
 import os
 import shutil
 import mimetypes
-from flask import Blueprint, request, redirect, url_for, render_template, send_file, current_app
+from flask import Blueprint, request, redirect, url_for, render_template, send_file, current_app, jsonify
 from flask_login import login_required
 from werkzeug.utils import secure_filename
 from app import db
@@ -109,14 +109,18 @@ def get_image(album_id, filename):
             current_app.logger.error(f"Files in album folder: {os.listdir(os.path.join(current_app.config['ALBUM_FOLDER'], album.folder_path))}")
         return f"File not found: {filename}", 404
     
-    encryption_service = EncryptionService(current_app.config['KEY_FILE'])
-    decrypted_file = encryption_service.get_decrypted_file(file_path)
-    
-    mimetype, _ = mimetypes.guess_type(filename)
-    if mimetype is None:
-        mimetype = 'application/octet-stream'
-    
-    return send_file(decrypted_file, mimetype=mimetype)
+    try:
+        encryption_service = EncryptionService(current_app.config['KEY_FILE'])
+        decrypted_file = encryption_service.get_decrypted_file(file_path)
+        
+        mimetype, _ = mimetypes.guess_type(filename)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
+        
+        return send_file(decrypted_file, mimetype=mimetype)
+    except Exception as e:
+        current_app.logger.error(f"Error serving image {filename}: {e}")
+        return f"Error serving image: {str(e)}", 500
 
 @album_bp.route('/cover/<filename>')
 @login_required
@@ -149,6 +153,8 @@ def rename(type, id):
 def change_cover(type, id):
     """Change cover image"""
     import time
+    from PIL import Image
+    import io
     
     if type == 'album':
         item = ImageAlbum.query.get_or_404(id)
@@ -183,6 +189,76 @@ def change_cover(type, id):
     db.session.commit()
     return redirect(request.referrer)
 
+@album_bp.route('/set_cover_from_page/<int:album_id>/<filename>', methods=['POST'])
+@login_required
+def set_cover_from_page(album_id, filename):
+    """Set cover image from album page"""
+    import time
+    from PIL import Image
+    import io
+    
+    album = ImageAlbum.query.get_or_404(album_id)
+    file_path = os.path.join(current_app.config['ALBUM_FOLDER'], album.folder_path, filename)
+    
+    if not os.path.exists(file_path):
+        return jsonify({'error': 'File not found'}), 404
+    
+    try:
+        # Decrypt and load image
+        encryption_service = EncryptionService(current_app.config['KEY_FILE'])
+        decrypted_file = encryption_service.get_decrypted_file(file_path)
+        decrypted_data = decrypted_file.getvalue()
+        
+        # Debug: Check if data looks like an image
+        if len(decrypted_data) < 10:
+            return jsonify({'error': 'Decrypted data too small'}), 500
+        
+        # Check file signature (first few bytes)
+        file_signature = decrypted_data[:10].hex()
+        print(f"File: {filename}, Size: {len(decrypted_data)}, Signature: {file_signature}")
+        
+        # Convert to JPG for smaller file size
+        try:
+            img = Image.open(io.BytesIO(decrypted_data))
+        except Exception as pil_error:
+            print(f"PIL error opening image: {pil_error}")
+            # Try to identify the format from the data
+            import imghdr
+            img_format = imghdr.what(None, h=decrypted_data[:32])
+            print(f"Detected format: {img_format}")
+            if img_format:
+                # Try opening with format hint
+                img = Image.open(io.BytesIO(decrypted_data))
+                img.verify()  # Verify the image is not corrupted
+                img = Image.open(io.BytesIO(decrypted_data))  # Re-open after verify
+            else:
+                raise Exception(f"Cannot identify image format. PIL error: {pil_error}")
+        
+        if img.mode in ('RGBA', 'LA', 'P'):
+            img = img.convert('RGB')
+        
+        # Save as cover
+        os.makedirs(current_app.config['COVER_FOLDER'], exist_ok=True)
+        new_filename = f"cover_album_{album_id}_{int(time.time())}.jpg"
+        save_path = os.path.join(current_app.config['COVER_FOLDER'], new_filename)
+        img.save(save_path, 'JPEG', quality=90)
+        
+        # Delete old cover
+        if album.cover_image:
+            old_path = os.path.join(current_app.config['COVER_FOLDER'], album.cover_image)
+            if os.path.exists(old_path):
+                os.remove(old_path)
+        
+        album.cover_image = new_filename
+        db.session.commit()
+        
+        return jsonify({'success': True, 'cover': new_filename})
+        
+    except Exception as e:
+        print(f"Error setting cover from page: {e}")
+        print(f"File: {filename}, Path: {file_path}")
+        return jsonify({'error': f'Failed to process image: {str(e)}'}), 500
+
 @album_bp.route('/delete/<type>/<int:id>', methods=['POST'])
 @login_required
 def delete(type, id):
@@ -206,11 +282,84 @@ def delete(type, id):
 @login_required
 def add_to_series(album_id):
     """Add album to series"""
+    import shutil
+    
     album = ImageAlbum.query.get_or_404(album_id)
     series_id = request.form.get('series_id')
     
     if series_id and series_id != "0":
         album.series_id = int(series_id)
+        series = ComicSeries.query.get(int(series_id))
+        
+        # Auto-set series cover from chapter 1
+        if series:
+            chapters = sorted(series.albums, key=lambda x: natural_sort_key(x.name))
+            if chapters and chapters[0].id == album_id:
+                # This is chapter 1, copy its cover to series
+                if album.cover_image:
+                    # Copy album cover to series
+                    album_cover_path = os.path.join(current_app.config['COVER_FOLDER'], album.cover_image)
+                    if os.path.exists(album_cover_path):
+                        import time
+                        ext = os.path.splitext(album.cover_image)[1]
+                        new_series_cover = f"cover_series_{series.id}_{int(time.time())}{ext}"
+                        series_cover_path = os.path.join(current_app.config['COVER_FOLDER'], new_series_cover)
+                        shutil.copy2(album_cover_path, series_cover_path)
+                        
+                        # Delete old series cover
+                        if series.cover_image:
+                            old_path = os.path.join(current_app.config['COVER_FOLDER'], series.cover_image)
+                            if os.path.exists(old_path):
+                                os.remove(old_path)
+                        
+                        series.cover_image = new_series_cover
+                else:
+                    # Use first image from album as cover
+                    first_img = ImageFile.query.filter_by(album_id=album_id).order_by(ImageFile.filename).first()
+                    if first_img:
+                        from PIL import Image
+                        import io
+                        import time
+                        
+                        file_path = os.path.join(current_app.config['ALBUM_FOLDER'], album.folder_path, first_img.filename)
+                        if os.path.exists(file_path):
+                            try:
+                                encryption_service = EncryptionService(current_app.config['KEY_FILE'])
+                                decrypted_file = encryption_service.get_decrypted_file(file_path)
+                                decrypted_data = decrypted_file.getvalue()
+                                
+                                new_series_cover = f"cover_series_{series.id}_{int(time.time())}.jpg"
+                                save_path = os.path.join(current_app.config['COVER_FOLDER'], new_series_cover)
+                                
+                                try:
+                                    img = Image.open(io.BytesIO(decrypted_data))
+                                except Exception as pil_error:
+                                    print(f"PIL error opening image for series cover: {pil_error}")
+                                    import imghdr
+                                    img_format = imghdr.what(None, h=decrypted_data[:32])
+                                    print(f"Detected format: {img_format}")
+                                    if img_format:
+                                        img = Image.open(io.BytesIO(decrypted_data))
+                                        img.verify()
+                                        img = Image.open(io.BytesIO(decrypted_data))
+                                    else:
+                                        raise Exception(f"Cannot identify image format. PIL error: {pil_error}")
+                                
+                                if img.mode in ('RGBA', 'LA', 'P'):
+                                    img = img.convert('RGB')
+                                img.save(save_path, 'JPEG', quality=90)
+                                
+                                # Delete old series cover
+                                if series.cover_image:
+                                    old_path = os.path.join(current_app.config['COVER_FOLDER'], series.cover_image)
+                                    if os.path.exists(old_path):
+                                        os.remove(old_path)
+                                
+                                series.cover_image = new_series_cover
+                            except Exception as e:
+                                print(f"Error creating series cover from first image: {e}")
+                                print(f"File: {first_img.filename}, Path: {file_path}")
+                                # Continue without setting cover
     else:
         album.series_id = None
     
