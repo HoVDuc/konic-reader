@@ -1,39 +1,188 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>Upload - Thư viện</title>
+    <title>Upload truyện - KonicReader</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; margin: 0; padding-top: 70px; }
-        .navbar { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; }
-        .nav-brand { font-size: 20px; font-weight: bold; color: #333; text-decoration: none; display: flex; align-items: center; gap: 10px; }
-        .nav-links { display: flex; gap: 20px; }
-        .nav-link { text-decoration: none; color: #555; font-weight: 600; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
-        .nav-link:hover, .nav-link.active { color: #007bff; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; display: flex; }
+        a { text-decoration: none; color: inherit; }
 
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; flex-wrap: wrap;}
-        .tab-btn { background: #eee; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold;}
-        .tab-btn.active { background: #007bff; color: white; }
-        .upload-box { background: #e9ecef; padding: 20px; border-radius: 5px; margin-bottom: 30px; display: none; }
-        .upload-box.show { display: block; }
-        .input-group { display: flex; gap: 10px; }
-        .input-text { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        .back-link { display: inline-block; margin-bottom: 20px; color: #007bff; text-decoration: none; }
-        .back-link:hover { text-decoration: underline; }
-        
-        #progress-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: none; justify-content: center; align-items: center; }
-        .progress-content { background: white; width: 400px; padding: 30px; border-radius: 10px; text-align: center; }
-        .progress-bar-bg { width: 100%; height: 20px; background: #eee; border-radius: 10px; margin: 15px 0; overflow: hidden; }
-        .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #007bff, #00c6ff); transition: width 0.3s; }
-        #progress-text { font-weight: bold; color: #555; margin-bottom: 5px; }
-        #progress-percent { font-size: 24px; font-weight: bold; color: #007bff; }
+        /* Sidebar */
+        .sidebar {
+            width: 220px; min-height: 100vh; background: #13151f;
+            position: fixed; top: 0; left: 0; bottom: 0;
+            z-index: 200; border-right: 1px solid #1e2336; overflow-y: auto;
+            display: flex; flex-direction: column;
+        }
+        .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 18px 16px; font-size: 17px; font-weight: 800; color: white; border-bottom: 1px solid #1e2336; }
+        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg,#7c3aed,#a855f7); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+        .sidebar-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: #4a5568; padding: 14px 16px 4px; text-transform: uppercase; }
+        .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: #94a3b8; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+        .sidebar-item:hover { background: #1a1d2e; color: #e2e8f0; }
+        .sidebar-item.active { background: #1e1b3a; color: #a78bfa; border-left: 3px solid #7c3aed; }
+        .sidebar-item i { width: 16px; text-align: center; font-size: 13px; }
+        .sidebar-item .notif { margin-left: auto; background: #ef4444; color: white; font-size: 9px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .vip-box { margin: 12px; background: linear-gradient(135deg,#1e1b3a,#2d1b69); border: 1px solid #4c1d95; border-radius: 10px; padding: 14px; text-align: center; }
+        .vip-box .vip-title { font-size: 12px; font-weight: 700; color: #fbbf24; margin-bottom: 5px; }
+        .vip-box ul { list-style: none; font-size: 11px; color: #94a3b8; text-align: left; line-height: 1.9; margin-bottom: 10px; }
+        .vip-box ul li::before { content: "✓ "; color: #a78bfa; }
+        .vip-btn { background: linear-gradient(135deg,#7c3aed,#a855f7); color: white; border: none; padding: 7px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; width: 100%; }
+
+        .help-box { margin: 0 12px 12px; background: #1a1d2e; border-radius: 10px; padding: 14px; text-align: center; }
+        .help-box p { font-size: 11px; color: #64748b; margin-bottom: 8px; line-height: 1.5; }
+        .help-btn { font-size: 12px; color: #a78bfa; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
+
+        /* Topbar */
+        .topbar { position: fixed; top: 0; left: 220px; right: 0; height: 60px; background: #0f1117; border-bottom: 1px solid #1e2336; display: flex; align-items: center; padding: 0 20px; gap: 14px; z-index: 100; }
+        .topbar-title { font-size: 17px; font-weight: 800; color: #e2e8f0; }
+        .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+        .topbar-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: #94a3b8; border-radius: 50%; cursor: pointer; }
+        .topbar-icon:hover { background: #1a1d2e; color: #e2e8f0; }
+        .btn-draft { background: #1a1d2e; color: #94a3b8; border: 1px solid #2d3748; padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .btn-next { background: linear-gradient(135deg,#7c3aed,#a855f7); color: white; border: none; padding: 8px 18px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
+        /* Layout */
+        .main { margin-left: 220px; padding-top: 60px; flex: 1; display: flex; gap: 0; }
+        .form-area { flex: 1; padding: 24px; min-width: 0; overflow-y: auto; }
+        .right-col { width: 280px; flex-shrink: 0; padding: 24px 16px; border-left: 1px solid #1e2336; }
+
+        /* Step wizard */
+        .step-wizard { display: flex; align-items: center; gap: 0; margin-bottom: 28px; }
+        .step { display: flex; align-items: center; gap: 8px; }
+        .step-num {
+            width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 800; flex-shrink: 0;
+        }
+        .step-num.done { background: #7c3aed; color: white; }
+        .step-num.current { background: linear-gradient(135deg,#7c3aed,#a855f7); color: white; box-shadow: 0 0 0 3px rgba(124,58,237,0.25); }
+        .step-num.pending { background: #1a1d2e; color: #4a5568; border: 1px solid #2d3748; }
+        .step-label { font-size: 13px; font-weight: 600; }
+        .step-label.current { color: #e2e8f0; }
+        .step-label.pending { color: #4a5568; }
+        .step-label.done { color: #7c3aed; }
+        .step-line { flex: 1; height: 1px; background: #2d3748; margin: 0 12px; }
+        .step-line.done { background: linear-gradient(90deg,#7c3aed,#a855f7); }
+
+        /* Form sections */
+        .form-section { background: #1a1d2e; border-radius: 12px; padding: 20px; margin-bottom: 18px; }
+        .form-section-title { font-size: 15px; font-weight: 800; color: #e2e8f0; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .required { color: #ef4444; }
+        .form-input {
+            width: 100%; padding: 10px 14px;
+            background: #0f1117; border: 1px solid #2d3748; border-radius: 8px;
+            color: #e2e8f0; font-size: 13px; outline: none; transition: border-color 0.15s;
+        }
+        .form-input:focus { border-color: #7c3aed; }
+        .form-input::placeholder { color: #4a5568; }
+        .form-select { width: 100%; padding: 10px 14px; background: #0f1117; border: 1px solid #2d3748; border-radius: 8px; color: #e2e8f0; font-size: 13px; outline: none; }
+        .form-select:focus { border-color: #7c3aed; }
+        .form-hint { font-size: 11px; color: #4a5568; margin-top: 4px; }
+        .form-textarea { width: 100%; padding: 10px 14px; background: #0f1117; border: 1px solid #2d3748; border-radius: 8px; color: #e2e8f0; font-size: 13px; outline: none; resize: vertical; min-height: 90px; font-family: inherit; }
+        .form-textarea:focus { border-color: #7c3aed; }
+        .char-count { text-align: right; font-size: 11px; color: #4a5568; margin-top: 4px; }
+
+        /* Cover upload area */
+        .cover-upload-area {
+            width: 100%; background: #0f1117; border: 2px dashed #2d3748; border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 24px; cursor: pointer; transition: border-color 0.15s; position: relative; overflow: hidden;
+        }
+        .cover-upload-area:hover { border-color: #7c3aed; }
+        .cover-upload-area i { font-size: 28px; color: #4a5568; margin-bottom: 6px; }
+        .cover-upload-area span { font-size: 12px; color: #4a5568; }
+        .cover-upload-area input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+        /* Status toggle */
+        .status-toggle { display: flex; gap: 8px; }
+        .status-btn { flex: 1; padding: 9px; border: 1px solid #2d3748; border-radius: 8px; background: #0f1117; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .status-btn:hover { border-color: #7c3aed; color: #a78bfa; }
+        .status-btn.active { background: #1e1b3a; border-color: #7c3aed; color: #a78bfa; }
+
+        /* Tag pills */
+        .tag-input-wrap { position: relative; }
+        .tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .tag-pill { display: flex; align-items: center; gap: 5px; background: #1e2336; border: 1px solid #2d3748; border-radius: 20px; padding: 4px 10px; font-size: 12px; color: #94a3b8; }
+        .tag-pill .tag-x { background: none; border: none; cursor: pointer; color: #4a5568; padding: 0; font-size: 11px; }
+        .tag-pill .tag-x:hover { color: #ef4444; }
+        .tag-add-input { background: none; border: none; outline: none; color: #e2e8f0; font-size: 12px; min-width: 80px; }
+        .tag-add-input::placeholder { color: #4a5568; }
+
+        /* Two-col form row */
+        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* Advanced settings */
+        .adv-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #1e2336; }
+        .adv-row:last-child { border-bottom: none; }
+        .adv-info { flex: 1; padding-right: 16px; }
+        .adv-label { font-size: 13px; font-weight: 600; color: #e2e8f0; margin-bottom: 3px; }
+        .adv-desc { font-size: 12px; color: #4a5568; line-height: 1.5; }
+        .toggle { width: 42px; height: 24px; background: #2d3748; border-radius: 12px; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; margin-top: 2px; }
+        .toggle.on { background: #7c3aed; }
+        .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: left 0.2s; }
+        .toggle.on::after { left: 21px; }
+
+        /* Notes textarea */
+        .notes-input { width: 100%; padding: 10px 14px; background: #0f1117; border: 1px solid #2d3748; border-radius: 8px; color: #e2e8f0; font-size: 13px; outline: none; resize: vertical; min-height: 70px; font-family: inherit; }
+        .notes-input:focus { border-color: #7c3aed; }
+
+        /* Commitment box */
+        .commit-box { background: #0f1117; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; margin-top: 18px; }
+        .commit-box-title { font-size: 13px; font-weight: 700; color: #94a3b8; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .commit-item { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: #64748b; margin-bottom: 8px; line-height: 1.5; }
+        .commit-item i { color: #10b981; margin-top: 2px; flex-shrink: 0; }
+        .mascot-msg { background: #1e1b3a; border: 1px solid #4c1d95; border-radius: 8px; padding: 12px; margin-top: 14px; display: flex; align-items: flex-start; gap: 10px; }
+        .mascot-msg p { font-size: 12px; color: #a78bfa; line-height: 1.5; }
+
+        /* Right column */
+        .guide-card { background: #1a1d2e; border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+        .guide-title { font-size: 13px; font-weight: 800; color: #e2e8f0; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .guide-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #64748b; margin-bottom: 8px; }
+        .guide-item i { color: #7c3aed; width: 14px; flex-shrink: 0; }
+        .guide-link { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #a78bfa; cursor: pointer; margin-top: 12px; }
+        .guide-link:hover { color: #c4b5fd; }
+
+        .preview-card { background: #1a1d2e; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+        .preview-title { font-size: 13px; font-weight: 800; color: #e2e8f0; margin-bottom: 12px; }
+        .preview-cover { width: 100%; aspect-ratio: 2/3; background: #0f1117; border-radius: 8px; overflow: hidden; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #2d3748; font-size: 36px; }
+        .preview-cover img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-meta { font-size: 12px; color: #64748b; line-height: 1.7; }
+        .preview-meta span { color: #94a3b8; }
+
+        .chapter-preview-list { margin-top: 14px; }
+        .chap-preview-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #1e2336; font-size: 12px; }
+        .chap-preview-item:last-child { border-bottom: none; }
+        .chap-preview-name { color: #94a3b8; font-weight: 600; }
+        .chap-preview-name.highlight { color: #a78bfa; }
+        .show-all-link { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #7c3aed; margin-top: 10px; cursor: pointer; }
+
+        /* Tabs for form type selection */
+        .upload-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .upload-tab { padding: 8px 16px; border: 1px solid #2d3748; background: #1a1d2e; color: #64748b; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+        .upload-tab:hover { border-color: #7c3aed; color: #a78bfa; }
+        .upload-tab.active { background: #7c3aed; border-color: #7c3aed; color: white; }
+        .upload-tab.series-tab { background: #1e1b3a; border-color: #4c1d95; color: #a78bfa; }
+        .upload-tab.series-tab.active { background: #4c1d95; }
+
+        .tab-panel { display: none; }
+        .tab-panel.show { display: block; }
+
+        /* Progress modal */
+        #progress-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: none; justify-content: center; align-items: center; }
+        .progress-content { background: #1a1d2e; width: 420px; padding: 32px; border-radius: 14px; text-align: center; border: 1px solid #2d3748; }
+        .progress-title { font-size: 16px; font-weight: 800; color: #e2e8f0; margin-bottom: 6px; }
+        .progress-pct { font-size: 44px; font-weight: 900; color: #7c3aed; margin: 12px 0; }
+        .progress-bar-bg { width: 100%; height: 8px; background: #2d3748; border-radius: 4px; margin: 10px 0; overflow: hidden; }
+        .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg,#7c3aed,#a855f7); transition: width 0.3s; border-radius: 4px; }
+        .progress-msg { font-size: 13px; color: #64748b; margin-top: 6px; }
     </style>
     <script>
         function switchTab(type) {
-            document.querySelectorAll('.upload-box').forEach(el => el.classList.remove('show'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('show'));
+            document.querySelectorAll('.upload-tab').forEach(el => el.classList.remove('active'));
             document.getElementById('form-' + type).classList.add('show');
             document.getElementById('btn-' + type).classList.add('active');
         }
@@ -46,122 +195,408 @@
             const pText = document.getElementById('progress-text');
             const pFill = document.getElementById('progress-bar-fill');
             const pPercent = document.getElementById('progress-percent');
-            
             modal.style.display = 'flex';
             pText.textContent = "Đang tải file lên server...";
-            pFill.style.width = "0%";
-            pPercent.textContent = "0%";
-
+            pFill.style.width = "0%"; pPercent.textContent = "0%";
             const xhr = new XMLHttpRequest();
             xhr.open('POST', url, true);
-            
             xhr.upload.onprogress = function(e) {
                 if (e.lengthComputable) {
-                    const percentComplete = (e.loaded / e.total) * 100;
-                    const visualPercent = Math.round(percentComplete * 0.3);
-                    pFill.style.width = visualPercent + "%";
-                    pPercent.textContent = visualPercent + "%";
+                    const v = Math.round((e.loaded / e.total) * 30);
+                    pFill.style.width = v + "%"; pPercent.textContent = v + "%";
                 }
             };
-
             xhr.onload = function() {
                 if (xhr.status === 200) {
                     const response = JSON.parse(xhr.responseText);
                     const taskId = response.task_id;
                     pText.textContent = "Đang xử lý...";
-                    
                     const interval = setInterval(function() {
-                        fetch('/api/status/' + taskId)
-                            .then(res => res.json())
-                            .then(data => {
-                                if (data.status === 'processing') {
-                                    const totalPercent = 30 + Math.round(data.progress * 0.7);
-                                    pFill.style.width = totalPercent + "%";
-                                    pPercent.textContent = totalPercent + "%";
-                                    pText.textContent = data.message;
-                                } else if (data.status === 'completed') {
-                                    clearInterval(interval);
-                                    pFill.style.width = "100%";
-                                    pPercent.textContent = "100%";
-                                    pText.textContent = "Hoàn tất! Đang chuyển hướng...";
-                                    setTimeout(() => window.location.href = "/", 1000);
-                                } else if (data.status === 'error') {
-                                    clearInterval(interval);
-                                    alert("Lỗi: " + data.message);
-                                    modal.style.display = 'none';
-                                }
-                            });
+                        fetch('/api/status/' + taskId).then(res => res.json()).then(data => {
+                            if (data.status === 'processing') {
+                                const v = 30 + Math.round(data.progress * 0.7);
+                                pFill.style.width = v + "%"; pPercent.textContent = v + "%";
+                                pText.textContent = data.message;
+                            } else if (data.status === 'completed') {
+                                clearInterval(interval);
+                                pFill.style.width = "100%"; pPercent.textContent = "100%";
+                                pText.textContent = "Hoàn tất! Đang chuyển hướng...";
+                                setTimeout(() => window.location.href = "/", 1000);
+                            } else if (data.status === 'error') {
+                                clearInterval(interval);
+                                alert("Lỗi: " + data.message);
+                                modal.style.display = 'none';
+                            }
+                        });
                     }, 1000);
                 } else {
-                    alert("Lỗi upload file!");
-                    modal.style.display = 'none';
+                    alert("Lỗi upload file!"); modal.style.display = 'none';
                 }
             };
             xhr.send(formData);
         }
+
+        function addTag(event) {
+            if (event.key === 'Enter' || event.key === ',') {
+                event.preventDefault();
+                const input = event.target;
+                const val = input.value.trim().replace(',', '');
+                if (!val) return;
+                const container = input.closest('.tags-row');
+                const pill = document.createElement('span');
+                pill.className = 'tag-pill';
+                pill.innerHTML = `${val} <button class="tag-x" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+                container.insertBefore(pill, input.parentElement);
+                input.value = '';
+            }
+        }
+
+        function countChars(el, counterId, max) {
+            document.getElementById(counterId).textContent = el.value.length + '/' + max;
+        }
     </script>
 </head>
 <body>
-    <nav class="navbar">
-        <a href="{{ url_for('main.index') }}" class="nav-brand"><i class="fas fa-book-open"></i> AlbumMan</a>
-        <div class="nav-links">
-            <a href="{{ url_for('main.index') }}" class="nav-link"><i class="fas fa-home"></i> Home</a>
-            <a href="{{ url_for('upload.upload_page') }}" class="nav-link active"><i class="fas fa-cloud-upload-alt"></i> Upload</a>
-            <a href="{{ url_for('tags.manage_tags') }}" class="nav-link"><i class="fas fa-tags"></i> Tags</a>
-            {% if current_user.is_authenticated %}
-                <span class="nav-link"><i class="fas fa-user"></i> {{ current_user.username }}</span>
-                <a href="{{ url_for('auth.logout') }}" class="nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            {% else %}
-                <a href="{{ url_for('auth.login') }}" class="nav-link"><i class="fas fa-sign-in-alt"></i> Login</a>
-                <a href="{{ url_for('auth.signup') }}" class="nav-link"><i class="fas fa-user-plus"></i> Sign Up</a>
-            {% endif %}
-        </div>
-    </nav>
 
-    <div id="progress-modal">
-        <div class="progress-content">
-            <h3 style="margin-top:0">Đang Xử Lý</h3>
-            <div id="progress-percent">0%</div>
-            <div class="progress-bar-bg"><div id="progress-bar-fill" class="progress-bar-fill"></div></div>
-            <div id="progress-text">Đang chuẩn bị...</div>
-        </div>
+<!-- Sidebar -->
+<nav class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon"><i class="fas fa-book-open"></i></div>
+        KonicReader
     </div>
 
-    <div class="container">
-        <h2><i class="fas fa-cloud-upload-alt"></i> Upload & Tạo mới</h2>
-        
-        <div class="tabs">
-            <button id="btn-zip" class="tab-btn active" onclick="switchTab('zip')">Upload ZIP</button>
-            <button id="btn-pdf" class="tab-btn" onclick="switchTab('pdf')">Upload PDF</button>
-            <button id="btn-folder" class="tab-btn" onclick="switchTab('folder')">Upload Folder</button>
-            <button id="btn-series" class="tab-btn" onclick="switchTab('series')" style="background: #e0cffc; color: #440099;">Tạo Bộ Truyện</button>
+    <div class="sidebar-label">Quản lý truyện</div>
+    <a href="{{ url_for('main.index') }}" class="sidebar-item"><i class="fas fa-tachometer-alt"></i> Bảng điều khiển</a>
+    <a href="{{ url_for('main.index') }}" class="sidebar-item"><i class="fas fa-book"></i> Truyện của tôi</a>
+    <a href="{{ url_for('upload.upload_page') }}" class="sidebar-item active"><i class="fas fa-cloud-upload-alt"></i> Upload truyện</a>
+    <a href="{{ url_for('main.index') }}" class="sidebar-item"><i class="fas fa-list-ul"></i> Danh sách chương</a>
+    <a href="{{ url_for('main.index') }}" class="sidebar-item"><i class="fas fa-comment"></i> Bình luận</a>
+    <a href="{{ url_for('main.index') }}" class="sidebar-item"><i class="fas fa-chart-bar"></i> Thống kê</a>
+
+    <div class="sidebar-label">Công cụ</div>
+    <a href="{{ url_for('main.index') }}" class="sidebar-item"><i class="fas fa-envelope"></i> Tin nhắn</a>
+    <a href="{{ url_for('main.index') }}" class="sidebar-item"><i class="fas fa-bell"></i> Thông báo <span class="notif">3</span></a>
+    <a href="{{ url_for('tags.manage_tags') }}" class="sidebar-item"><i class="fas fa-heart"></i> Yêu thích</a>
+    <a href="{{ url_for('main.index') }}" class="sidebar-item"><i class="fas fa-history"></i> Lịch sử đọc</a>
+    <a href="{{ url_for('main.index') }}" class="sidebar-item"><i class="fas fa-cog"></i> Cài đặt tài khoản</a>
+
+    <div style="margin-top: auto; padding-bottom: 12px;">
+        <div class="vip-box">
+            <div class="vip-title">👑 VIP - Uploader Pro</div>
+            <ul>
+                <li>Upload không giới hạn</li>
+                <li>Dung lượng không giới hạn</li>
+                <li>Ưu tiên duyệt nhanh</li>
+                <li>Hỗ trợ banner truyện</li>
+            </ul>
+            <button class="vip-btn">Nâng cấp ngay</button>
         </div>
+        <div class="help-box">
+            <p>Cần hỗ trợ? Xem hướng dẫn upload truyện</p>
+            <a href="{{ url_for('main.index') }}" class="help-btn"><i class="fas fa-question-circle"></i> Xem hướng dẫn upload</a>
+        </div>
+    </div>
+</nav>
 
-        <form id="form-pdf" onsubmit="uploadFileAjax(event, '/upload/pdf')" class="upload-box">
-            <p style="margin-top:0">Chọn file PDF (Convert & Mã hóa):</p>
-            <input type="file" name="file" accept=".pdf" required>
-            <button type="submit" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px;">Upload PDF</button>
-        </form>
-
-        <form id="form-zip" onsubmit="uploadFileAjax(event, '/upload/zip')" class="upload-box show">
-            <p style="margin-top:0">Chọn file ZIP (Giải nén & Mã hóa):</p>
-            <input type="file" name="file" accept=".zip" required>
-            <button type="submit" style="background: #17a2b8; color: white; border: none; padding: 10px 20px; border-radius: 4px;">Upload ZIP</button>
-        </form>
-
-        <form id="form-folder" action="{{ url_for('upload.upload_folder') }}" method="POST" enctype="multipart/form-data" class="upload-box">
-            <p style="margin-top:0">Chọn folder (chỉ máy tính):</p>
-            <input type="file" name="files" webkitdirectory directory multiple required>
-            <button type="submit" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px;">Upload Folder</button>
-        </form>
-
-        <form id="form-series" action="{{ url_for('series.create_series') }}" method="POST" class="upload-box">
-            <p style="margin-top:0">Tạo bộ truyện mới:</p>
-            <div class="input-group">
-                <input type="text" name="series_name" class="input-text" placeholder="Nhập tên..." required>
-                <button type="submit" style="background: #6f42c1; color: white; border: none; padding: 10px 20px; border-radius: 4px;">Tạo Series</button>
+<!-- Topbar -->
+<div class="topbar">
+    <div class="topbar-title">Upload chương mới</div>
+    <div class="topbar-right">
+        <button class="btn-draft"><i class="fas fa-save"></i> Lưu nháp</button>
+        <button class="btn-next" onclick="switchTab('folder')">Tiếp theo <i class="fas fa-arrow-right"></i></button>
+        {% if current_user.is_authenticated %}
+            <div style="display:flex;align-items:center;gap:8px;margin-left:8px">
+                <div style="width:30px;height:30px;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">{{ current_user.username[0].upper() }}</div>
+                <div>
+                    <div style="font-size:12px;font-weight:700">{{ current_user.username }}</div>
+                    <div style="font-size:10px;color:#7c3aed;font-weight:600">VIP</div>
+                </div>
             </div>
-        </form>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;border:none;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600">Đăng nhập</a>
+        {% endif %}
     </div>
+</div>
+
+<!-- Progress modal -->
+<div id="progress-modal">
+    <div class="progress-content">
+        <div class="progress-title">Đang Xử Lý</div>
+        <div class="progress-pct" id="progress-percent">0%</div>
+        <div class="progress-bar-bg"><div id="progress-bar-fill" class="progress-bar-fill"></div></div>
+        <div class="progress-msg" id="progress-text">Đang chuẩn bị...</div>
+    </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+    <div class="form-area">
+
+        <!-- Step wizard -->
+        <div class="step-wizard">
+            <div class="step">
+                <div class="step-num current">1</div>
+                <span class="step-label current">Thông tin cơ bản</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+                <div class="step-num pending">2</div>
+                <span class="step-label pending">Tải ảnh truyện</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+                <div class="step-num pending">3</div>
+                <span class="step-label pending">Kiểm tra &amp; hoàn tất</span>
+            </div>
+        </div>
+
+        <!-- Upload type tabs -->
+        <div class="upload-tabs">
+            <button id="btn-zip" class="upload-tab active" onclick="switchTab('zip')"><i class="fas fa-file-archive"></i> Upload ZIP</button>
+            <button id="btn-pdf" class="upload-tab" onclick="switchTab('pdf')"><i class="fas fa-file-pdf"></i> Upload PDF</button>
+            <button id="btn-folder" class="upload-tab" onclick="switchTab('folder')"><i class="fas fa-folder-open"></i> Upload Folder</button>
+            <button id="btn-series" class="upload-tab series-tab" onclick="switchTab('series')"><i class="fas fa-layer-group"></i> Tạo bộ truyện</button>
+        </div>
+
+        <!-- ZIP form -->
+        <div id="form-zip" class="tab-panel show">
+            <form onsubmit="uploadFileAjax(event, '/upload/zip')">
+                <div class="form-section">
+                    <div class="form-section-title">Thông tin cơ bản</div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label"><span class="required">*</span> Truyện</label>
+                            <input type="text" class="form-input" placeholder="Tên bộ truyện...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><span class="required">*</span> Chương <i class="fas fa-question-circle" style="color:#4a5568;font-size:11px"></i></label>
+                            <input type="number" class="form-input" placeholder="VD: 179, 180.5...">
+                            <div class="form-hint">Ví dụ: 179, 180.5, Ngoại truyện 1...</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><span class="required">*</span> Tiêu đề chương <i class="fas fa-question-circle" style="color:#4a5568;font-size:11px"></i></label>
+                        <input type="text" class="form-input" placeholder="Nhập tiêu đề chương...">
+                        <div class="form-hint">Tiêu đề hấp dẫn sẽ thu hút nhiều lượt đọc hơn!</div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label"><span class="required">*</span> Ngôn ngữ</label>
+                            <select class="form-select">
+                                <option>Tiếng Việt</option>
+                                <option>English</option>
+                                <option>日本語</option>
+                                <option>中文</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><span class="required">*</span> Trạng thái</label>
+                            <div class="status-toggle">
+                                <div class="status-btn active" onclick="setStatus(this)"><i class="fas fa-globe"></i> Công khai</div>
+                                <div class="status-btn" onclick="setStatus(this)"><i class="fas fa-lock"></i> Riêng tư</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giới thiệu ngắn <span style="color:#4a5568">(tùy chọn)</span></label>
+                        <textarea class="form-textarea" placeholder="Sau khi trải qua nhiều thử thách..." maxlength="300" oninput="countChars(this,'desc-count',300)"></textarea>
+                        <div class="char-count"><span id="desc-count">0/300</span></div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label"><span class="required">*</span> Thể loại</label>
+                            <select class="form-select">
+                                <option>Action</option>
+                                <option>Adventure</option>
+                                <option>Fantasy</option>
+                                <option>Romance</option>
+                                <option>Comedy</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nhóm dịch</label>
+                            <input type="text" class="form-input" placeholder="Tên nhóm dịch...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tags <span style="color:#4a5568">(tùy chọn)</span></label>
+                        <div style="background:#0f1117;border:1px solid #2d3748;border-radius:8px;padding:8px 12px">
+                            <div class="tags-row">
+                                <span class="tag-pill">sung jin-woo <button class="tag-x" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button></span>
+                                <span class="tag-pill">thức tỉnh <button class="tag-x" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button></span>
+                                <span style="display:flex;align-items:center">
+                                    <input type="text" class="tag-add-input" placeholder="Thêm tag..." onkeydown="addTag(event)">
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-hint">Tags giúp người đọc dễ dàng tìm thấy truyện của bạn</div>
+                    </div>
+                </div>
+
+                <!-- Advanced settings -->
+                <div class="form-section">
+                    <div class="form-section-title">Cài đặt nâng cao</div>
+                    <div class="adv-row">
+                        <div class="adv-info">
+                            <div class="adv-label">Tắt bình luận cho chương này</div>
+                            <div class="adv-desc">Bình luận sẽ bị ẩn đối với chương này</div>
+                        </div>
+                        <div class="toggle" onclick="this.classList.toggle('on')"></div>
+                    </div>
+                    <div class="adv-row">
+                        <div class="adv-info">
+                            <div class="adv-label">Đặt làm chương nổi bật <i class="fas fa-question-circle" style="color:#4a5568;font-size:11px"></i></div>
+                            <div class="adv-desc">Chương sẽ hiển thị ở vị trí nổi bật trong danh sách chương</div>
+                        </div>
+                        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                    </div>
+                    <div class="adv-row">
+                        <div class="adv-info">
+                            <div class="adv-label">Ghi chú cho quản trị viên <span style="color:#4a5568;font-size:12px">(tùy chọn)</span></div>
+                        </div>
+                    </div>
+                    <textarea class="notes-input" placeholder="Nhập ghi chú nếu bạn muốn gửi thông tin cho quản trị viên..." maxlength="300" oninput="countChars(this,'note-count',300)"></textarea>
+                    <div class="char-count"><span id="note-count">0/300</span></div>
+                    <div class="form-hint" style="margin-top:4px">Ghi chú này chỉ quản trị viên mới có thể xem</div>
+                </div>
+
+                <!-- File upload -->
+                <div class="form-section">
+                    <div class="form-section-title">File ZIP</div>
+                    <div class="cover-upload-area">
+                        <i class="fas fa-file-archive"></i>
+                        <span>Kéo thả file ZIP vào đây hoặc click để chọn</span>
+                        <span style="font-size:11px;margin-top:4px;color:#4a5568">Hỗ trợ: .zip | Tối đa: 200MB</span>
+                        <input type="file" name="file" accept=".zip" required>
+                    </div>
+                </div>
+
+                <!-- Commitment -->
+                <div class="commit-box">
+                    <div class="commit-box-title"><i class="fas fa-shield-alt" style="color:#7c3aed"></i> Cam kết của Uploader</div>
+                    <div class="commit-item"><i class="fas fa-check"></i> Tôi sở hữu bản quyền hoặc có quyền chia sẻ nội dung này</div>
+                    <div class="commit-item"><i class="fas fa-check"></i> Nội dung không vi phạm pháp luật và thuần phong mỹ tục</div>
+                    <div class="commit-item"><i class="fas fa-check"></i> Tôi chịu trách nhiệm về nội dung đã đăng tải</div>
+                    <div class="mascot-msg">
+                        <div style="width:36px;height:36px;flex-shrink:0;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:16px">✨</div>
+                        <p>Cảm ơn bạn đã đóng góp nội dung tuyệt vời cho cộng đồng! 💜</p>
+                    </div>
+                </div>
+
+                <div style="margin-top:18px;display:flex;gap:10px;justify-content:flex-end">
+                    <a href="{{ url_for('main.index') }}" style="padding:10px 20px;border:1px solid #2d3748;border-radius:8px;color:#64748b;font-size:13px;font-weight:600">Hủy</a>
+                    <button type="submit" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload ZIP
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- PDF form -->
+        <div id="form-pdf" class="tab-panel">
+            <form onsubmit="uploadFileAjax(event, '/upload/pdf')">
+                <div class="form-section">
+                    <div class="form-section-title">Upload PDF</div>
+                    <div class="form-group">
+                        <label class="form-label"><span class="required">*</span> Chọn file PDF</label>
+                        <div class="cover-upload-area">
+                            <i class="fas fa-file-pdf" style="color:#ef4444"></i>
+                            <span>Kéo thả file PDF hoặc click để chọn</span>
+                            <span style="font-size:11px;color:#4a5568">Hỗ trợ: .pdf | Tối đa: 200MB</span>
+                            <input type="file" name="file" accept=".pdf" required>
+                        </div>
+                    </div>
+                    <button type="submit" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload PDF
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Folder form -->
+        <div id="form-folder" class="tab-panel">
+            <form action="{{ url_for('upload.upload_folder') }}" method="POST" enctype="multipart/form-data">
+                <div class="form-section">
+                    <div class="form-section-title">Upload Folder</div>
+                    <div class="form-group">
+                        <label class="form-label"><span class="required">*</span> Chọn thư mục</label>
+                        <div class="cover-upload-area">
+                            <i class="fas fa-folder-open" style="color:#f59e0b"></i>
+                            <span>Click để chọn thư mục ảnh</span>
+                            <span style="font-size:11px;color:#4a5568">Chỉ hỗ trợ từ máy tính</span>
+                            <input type="file" name="files" webkitdirectory directory multiple required>
+                        </div>
+                    </div>
+                    <button type="submit" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload Folder
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Series form -->
+        <div id="form-series" class="tab-panel">
+            <form action="{{ url_for('series.create_series') }}" method="POST">
+                <div class="form-section">
+                    <div class="form-section-title">Tạo bộ truyện mới</div>
+                    <div class="form-group">
+                        <label class="form-label"><span class="required">*</span> Tên bộ truyện</label>
+                        <input type="text" name="series_name" class="form-input" placeholder="Nhập tên bộ truyện..." required>
+                    </div>
+                    <button type="submit" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:6px">
+                        <i class="fas fa-layer-group"></i> Tạo Series
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Right column -->
+    <div class="right-col">
+        <div class="guide-card">
+            <div class="guide-title"><i class="fas fa-info-circle" style="color:#7c3aed"></i> Hướng dẫn upload</div>
+            <div class="guide-item"><i class="fas fa-image"></i> Ảnh định dạng: JPG, PNG, WEBP</div>
+            <div class="guide-item"><i class="fas fa-weight"></i> Dung lượng tối đa: 20MB / ảnh</div>
+            <div class="guide-item"><i class="fas fa-expand"></i> Kích thước khuyến nghị: 800px trở lên</div>
+            <div class="guide-item"><i class="fas fa-sort-numeric-asc"></i> Tên file: chapter_179_001.jpg</div>
+            <div class="guide-item"><i class="fas fa-shield-alt"></i> Không chứa nội dung vi phạm bản quyền</div>
+            <a href="{{ url_for('main.index') }}" class="guide-link">
+                Xem hướng dẫn chi tiết <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="preview-card">
+            <div class="preview-title">Preview truyện</div>
+            <div class="preview-cover">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <div class="preview-meta">
+                <div>Tác giả: <span>—</span></div>
+                <div>Họa sĩ: <span>—</span></div>
+                <div>Thể loại: <span>—</span></div>
+                <div>Lượt theo dõi: <span>—</span></div>
+                <div style="margin-top:6px;color:#f59e0b">★ —</div>
+            </div>
+        </div>
+
+        <div class="guide-card">
+            <div class="guide-title"><i class="fas fa-list-ul" style="color:#7c3aed"></i> Danh sách chương hiện tại</div>
+            <div class="chapter-preview-list">
+                <div style="font-size:12px;color:#4a5568;text-align:center;padding:16px 0">
+                    <i class="fas fa-layer-group" style="display:block;font-size:24px;margin-bottom:8px"></i>
+                    Chọn truyện để xem danh sách chương
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function setStatus(btn) {
+    btn.closest('.status-toggle').querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+</script>
 </body>
 </html>

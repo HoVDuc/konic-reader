@@ -1,270 +1,567 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>Chi tiết: {{ item_name }}</title>
+    <title>{{ item_name }} - KonicReader</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body{font-family:'Segoe UI',sans-serif;background:#333;margin:0;padding:20px;padding-top:80px;display:flex;justify-content:center;align-items:flex-start;min-height:100vh}
-        .navbar { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; }
-        .nav-brand { font-size: 20px; font-weight: bold; color: #333; text-decoration: none; display: flex; align-items: center; gap: 10px; }
-        .nav-links { display: flex; gap: 20px; }
-        .nav-link { text-decoration: none; color: #555; font-weight: 600; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
-        .nav-link:hover, .nav-link.active { color: #007bff; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+        a { text-decoration: none; color: inherit; }
 
-        .modal{background:white;width:100%;max-width:800px;border-radius:12px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,0.5);display:flex;flex-direction:column;margin-top:20px}
-        .header-area{display:flex;border-bottom:1px solid #ddd;background:#fff}
-        .preview-area{width:250px;background:#eee;display:flex;justify-content:center;align-items:center;position:relative;overflow:hidden;border-right:1px solid #ddd;padding:10px}
-        .preview-area img{max-width:100%;max-height:300px;box-shadow:0 5px 15px rgba(0,0,0,0.2)}
-        .info-area{padding:20px;flex-grow:1}
-        h2{margin:0 0 5px 0;font-size:22px;color:#333}
-        .meta{color:#666;font-size:14px;margin-bottom:20px;border-bottom:1px solid #eee;padding-bottom:15px}
-        .form-group{background:#f8f9fa;padding:10px;border-radius:6px;margin-bottom:10px;border:1px solid #eee}
-        .form-label{font-size:11px;font-weight:bold;display:block;margin-bottom:5px;color:#555;text-transform:uppercase}
-        .btn-sm{padding:5px 10px;font-size:13px;cursor:pointer;border-radius:4px;border:none;color:white}
-        .btn-save{background:#28a745}
-        .btn-link{background:#6f42c1}
-        .status-box{margin-bottom:15px;padding:10px;border-radius:6px;display:flex;align-items:center;justify-content:space-between}
-        .status-ongoing{background:#fff3cd;color:#856404;border:1px solid #ffeeba}
-        .status-completed{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
-        .chapter-list{max-height:400px;overflow-y:auto;background:#f9f9f9;padding:10px}
-        .chapter-item{display:flex;justify-content:space-between;align-items:center;padding:10px;background:white;border:1px solid #eee;margin-bottom:5px;border-radius:4px;text-decoration:none;color:#333;transition:0.2s}
-        .chapter-item:hover{background:#eef;border-color:#aaf}
-        .chapter-name{font-weight:600}
-        .chapter-meta{font-size:12px;color:#888}
-        @media (max-width: 600px){
-            .header-area{flex-direction:column}
-            .preview-area{width:100%;height:200px;border-right:none;border-bottom:1px solid #ddd}
+        /* Topbar */
+        .topbar {
+            position: sticky; top: 0;
+            background: rgba(13,13,26,0.97); border-bottom: 1px solid #1e2336;
+            display: flex; align-items: center; padding: 0 24px; height: 60px; gap: 14px; z-index: 100;
         }
-        .page-selector-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;overflow-y:auto;padding:20px}
-        .page-selector-content{background:white;padding:20px;border-radius:10px;max-width:900px;width:100%;margin:0 auto;max-height:90vh;overflow-y:auto}
-        .page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:20px}
-        .page-item{cursor:pointer;border:3px solid transparent;border-radius:5px;overflow:hidden;transition:border-color 0.2s}
-        .page-item:hover{border-color:#007bff}
-        .page-item img{width:100%;height:auto;display:block}
-        .page-item.selected{border-color:#28a745}
+        .logo { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: white; }
+        .logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg,#7c3aed,#a855f7); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .search-bar {
+            flex: 1; max-width: 360px; display: flex; align-items: center;
+            background: #1a1d2e; border: 1px solid #2d3748; border-radius: 20px; padding: 7px 14px; gap: 8px;
+        }
+        .search-bar input { background: none; border: none; color: #e2e8f0; font-size: 13px; outline: none; flex: 1; }
+        .search-bar input::placeholder { color: #4a5568; }
+        .search-bar i { color: #4a5568; font-size: 13px; }
+        .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+        .topbar-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: #94a3b8; border-radius: 50%; cursor: pointer; }
+        .topbar-icon:hover { background: #1a1d2e; color: #e2e8f0; }
+        .btn-login { background: linear-gradient(135deg,#7c3aed,#a855f7); color: white; border: none; padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-signup { background: none; color: #a78bfa; border: 1px solid #7c3aed; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+        .user-avatar { width: 30px; height: 30px; background: linear-gradient(135deg,#7c3aed,#a855f7); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+
+        /* Breadcrumb */
+        .breadcrumb-bar { padding: 12px 24px; display: flex; align-items: center; gap: 6px; font-size: 13px; color: #4a5568; }
+        .breadcrumb-bar a { color: #4a5568; }
+        .breadcrumb-bar a:hover { color: #a78bfa; }
+        .breadcrumb-bar .sep { color: #2d3748; }
+        .breadcrumb-bar .current { color: #94a3b8; }
+
+        /* Main layout */
+        .page-container { max-width: 1200px; margin: 0 auto; padding: 0 24px 40px; }
+
+        /* Info header */
+        .info-header { display: flex; gap: 28px; margin-bottom: 32px; }
+        .cover-col { flex-shrink: 0; width: 210px; }
+        .cover-img-wrap {
+            width: 210px; height: 300px; border-radius: 10px; overflow: hidden;
+            background: #1a1d2e; box-shadow: 0 8px 32px rgba(0,0,0,0.5); position: relative;
+        }
+        .cover-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .no-cover { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #4a5568; font-size: 52px; }
+
+        .info-col { flex: 1; min-width: 0; }
+        .manga-title { font-size: 28px; font-weight: 900; color: #e2e8f0; margin-bottom: 4px; line-height: 1.2; }
+        .manga-alt { font-size: 14px; color: #64748b; margin-bottom: 14px; }
+        .manga-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 16px; }
+        .tag-pill {
+            padding: 4px 12px; background: #1e2336; border: 1px solid #2d3748;
+            border-radius: 20px; font-size: 12px; color: #94a3b8; cursor: pointer;
+        }
+        .tag-pill:hover { border-color: #7c3aed; color: #a78bfa; }
+
+        .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; margin-bottom: 18px; }
+        .meta-row { font-size: 13px; }
+        .meta-label { color: #4a5568; margin-right: 6px; }
+        .meta-value { color: #e2e8f0; font-weight: 500; }
+        .meta-value.purple { color: #a78bfa; }
+        .meta-value.green { color: #10b981; }
+
+        .action-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-primary {
+            background: linear-gradient(135deg,#7c3aed,#a855f7); color: white;
+            border: none; padding: 11px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .btn-secondary {
+            background: #1a1d2e; color: #e2e8f0; border: 1px solid #2d3748;
+            padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .btn-secondary:hover { border-color: #7c3aed; color: #a78bfa; }
+        .btn-danger { background: #1a1d2e; color: #ef4444; border: 1px solid #2d3748; padding: 10px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-danger:hover { border-color: #ef4444; }
+
+        /* Rating box */
+        .rating-col { flex-shrink: 0; width: 220px; }
+        .rating-box { background: #1a1d2e; border-radius: 12px; padding: 20px; text-align: center; }
+        .rating-big { font-size: 48px; font-weight: 900; color: #f59e0b; line-height: 1; margin-bottom: 8px; }
+        .rating-stars { display: flex; justify-content: center; gap: 4px; margin-bottom: 8px; color: #f59e0b; font-size: 18px; }
+        .rating-count { font-size: 12px; color: #64748b; margin-bottom: 14px; }
+        .rating-bars { text-align: left; margin-bottom: 16px; }
+        .rbar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+        .rbar-label { color: #64748b; width: 8px; text-align: right; }
+        .rbar-bg { flex: 1; height: 5px; background: #2d3748; border-radius: 3px; overflow: hidden; }
+        .rbar-fill { height: 100%; border-radius: 3px; }
+        .rbar-pct { color: #64748b; width: 32px; text-align: right; }
+        .btn-rate { background: linear-gradient(135deg,#7c3aed,#a855f7); color: white; border: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+        /* Status & controls */
+        .status-completed { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: #0d3321; border: 1px solid #10b981; border-radius: 20px; font-size: 12px; color: #10b981; font-weight: 600; }
+        .status-ongoing { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: #2d1b00; border: 1px solid #f59e0b; border-radius: 20px; font-size: 12px; color: #f59e0b; font-weight: 600; }
+
+        /* Admin controls */
+        .admin-panel { background: #1a1d2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; margin-bottom: 24px; }
+        .admin-panel-title { font-size: 13px; font-weight: 700; color: #94a3b8; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .form-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .form-input {
+            flex: 1; min-width: 120px; padding: 8px 12px;
+            background: #0f1117; border: 1px solid #2d3748; border-radius: 6px;
+            color: #e2e8f0; font-size: 13px; outline: none;
+        }
+        .form-input:focus { border-color: #7c3aed; }
+        .form-select { padding: 8px 12px; background: #0f1117; border: 1px solid #2d3748; border-radius: 6px; color: #e2e8f0; font-size: 13px; outline: none; }
+        .form-select:focus { border-color: #7c3aed; }
+        .btn-sm { padding: 7px 14px; border-radius: 6px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-sm-primary { background: #7c3aed; color: white; }
+        .btn-sm-primary:hover { background: #6d28d9; }
+        .btn-sm-info { background: #0891b2; color: white; }
+        .btn-sm-warning { background: #d97706; color: white; }
+        .btn-sm-danger { background: #dc2626; color: white; }
+        .btn-sm-gray { background: #374151; color: #94a3b8; }
+        .btn-sm-fav { background: #1e2336; color: #f59e0b; border: 1px solid #f59e0b4d; }
+        .btn-sm-fav.active { background: #f59e0b22; }
+        .inline-form { display: inline; }
+
+        .tags-display { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+        .tag-item { display: flex; align-items: center; gap: 5px; background: #1e2336; border: 1px solid #2d3748; border-radius: 20px; padding: 3px 10px; font-size: 12px; color: #94a3b8; }
+        .tag-remove { background: none; border: none; cursor: pointer; color: #ef4444; padding: 0; font-size: 11px; display: flex; align-items: center; }
+        .tag-suggestions { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+        .tag-suggest-btn { background: #0f1117; border: 1px solid #2d3748; padding: 3px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; color: #64748b; transition: all 0.15s; }
+        .tag-suggest-btn:hover { border-color: #7c3aed; color: #a78bfa; }
+
+        /* Description */
+        .section-block { background: #1a1d2e; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .section-block-title { font-size: 15px; font-weight: 800; color: #e2e8f0; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+        .section-count { font-size: 12px; font-weight: 600; background: #2d3748; color: #94a3b8; padding: 2px 8px; border-radius: 10px; }
+
+        .description-text { font-size: 14px; color: #94a3b8; line-height: 1.7; }
+        .toggle-desc { background: none; border: none; color: #7c3aed; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px; padding: 0; display: flex; align-items: center; gap: 4px; }
+
+        /* Chapter list */
+        .chapter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .chap-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 12px; background: #0f1117; border-radius: 6px; border: 1px solid #1e2336;
+            transition: border-color 0.15s; cursor: pointer;
+        }
+        .chap-row:hover { border-color: #7c3aed; }
+        .chap-name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+        .chap-name .new-tag { background: #7c3aed; color: white; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; margin-left: 6px; vertical-align: middle; }
+        .chap-time { font-size: 11px; color: #4a5568; }
+        .show-all-btn { margin-top: 10px; width: 100%; padding: 10px; background: transparent; border: 1px solid #2d3748; border-radius: 8px; color: #7c3aed; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .show-all-btn:hover { background: #1a1d2e; }
+
+        /* Related */
+        .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 12px; }
+        .related-card { background: #0f1117; border-radius: 8px; overflow: hidden; transition: transform 0.2s; }
+        .related-card:hover { transform: translateY(-3px); }
+        .related-cover { width: 100%; aspect-ratio: 2/3; background: #2d3748; position: relative; overflow: hidden; }
+        .related-cover img { width: 100%; height: 100%; object-fit: cover; }
+        .no-rel-cover { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #4a5568; font-size: 28px; }
+        .related-info { padding: 8px; }
+        .related-name { font-size: 12px; font-weight: 600; color: #e2e8f0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; margin-bottom: 4px; }
+        .related-meta { font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 4px; }
+        .related-meta i { color: #f59e0b; font-size: 10px; }
+
+        /* Reviews */
+        .review-card { background: #0f1117; border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+        .review-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .reviewer-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,#7c3aed,#a855f7); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+        .reviewer-name { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+        .review-date { font-size: 11px; color: #4a5568; }
+        .review-text { font-size: 13px; color: #94a3b8; line-height: 1.6; }
+        .review-actions { display: flex; gap: 12px; margin-top: 8px; }
+        .review-action { font-size: 12px; color: #4a5568; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .review-action:hover { color: #94a3b8; }
+
+        /* Page selector modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 999; overflow-y: auto; padding: 20px; }
+        .modal-content { background: #1a1d2e; padding: 24px; border-radius: 12px; max-width: 900px; width: 100%; margin: 0 auto; border: 1px solid #2d3748; }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .page-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: 10px; margin-top: 16px; }
+        .page-item { cursor: pointer; border: 2px solid transparent; border-radius: 6px; overflow: hidden; transition: border-color 0.2s; }
+        .page-item:hover { border-color: #7c3aed; }
+        .page-item img { width: 100%; height: auto; display: block; }
+        .page-item.selected { border-color: #10b981; }
+        .page-num { text-align: center; padding: 4px; background: #0f1117; font-size: 11px; color: #64748b; }
+
+        /* Series add box */
+        .series-select-box { background: #1e1b3a; border: 1px solid #4c1d95; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+        .series-select-label { font-size: 11px; font-weight: 700; color: #a78bfa; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+        /* Layout: main + sidebar */
+        .detail-layout { display: flex; gap: 20px; }
+        .detail-main { flex: 1; min-width: 0; }
+        .detail-sidebar { width: 260px; flex-shrink: 0; }
     </style>
     <script>
-    function showPageSelector() {
-        document.getElementById('page-selector-modal').style.display = 'flex';
-    }
-    function closePageSelector() {
-        document.getElementById('page-selector-modal').style.display = 'none';
-    }
+    function showPageSelector() { document.getElementById('page-selector-modal').style.display = 'flex'; }
+    function closePageSelector() { document.getElementById('page-selector-modal').style.display = 'none'; }
     function selectPage(albumId, filename) {
         if (!confirm('Đặt trang này làm ảnh bìa?')) return;
-        fetch('/album/set_cover_from_page/' + albumId + '/' + filename, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'}
-        })
+        fetch('/album/set_cover_from_page/' + albumId + '/' + filename, { method: 'POST', headers: {'Content-Type': 'application/json'} })
         .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert('Đã đặt ảnh bìa!');
-                location.reload();
-            } else {
-                alert('Lỗi: ' + data.error);
-            }
-        })
+        .then(data => { if (data.success) { alert('Đã đặt ảnh bìa!'); location.reload(); } else { alert('Lỗi: ' + data.error); } })
         .catch(err => alert('Lỗi: ' + err));
     }
     </script>
 </head>
 <body>
-    <nav class="navbar">
-        <a href="{{ url_for('main.index') }}" class="nav-brand"><i class="fas fa-book-open"></i> AlbumMan</a>
-        <div class="nav-links">
-            <a href="{{ url_for('main.index') }}" class="nav-link"><i class="fas fa-home"></i> Home</a>
-            <a href="{{ url_for('upload.upload_page') }}" class="nav-link"><i class="fas fa-cloud-upload-alt"></i> Upload</a>
-            <a href="{{ url_for('tags.manage_tags') }}" class="nav-link"><i class="fas fa-tags"></i> Tags</a>
-            {% if current_user.is_authenticated %}
-                <span class="nav-link"><i class="fas fa-user"></i> {{ current_user.username }}</span>
-                <a href="{{ url_for('auth.logout') }}" class="nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            {% else %}
-                <a href="{{ url_for('auth.login') }}" class="nav-link"><i class="fas fa-sign-in-alt"></i> Login</a>
-                <a href="{{ url_for('auth.signup') }}" class="nav-link"><i class="fas fa-user-plus"></i> Sign Up</a>
-            {% endif %}
-        </div>
-    </nav>
 
-    <div class="modal">
-        <div class="header-area">
-            <div class="preview-area">
+<!-- Topbar -->
+<nav class="topbar">
+    <a href="{{ url_for('main.index') }}" class="logo">
+        <div class="logo-icon"><i class="fas fa-book-open"></i></div>
+        KonicReader
+    </a>
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Tìm truyện, tác giả...">
+    </div>
+    <div class="topbar-right">
+        <div class="topbar-icon"><i class="fas fa-bell"></i></div>
+        <div class="topbar-icon"><i class="fas fa-moon"></i></div>
+        {% if current_user.is_authenticated %}
+            <div style="display:flex;align-items:center;gap:8px">
+                <div class="user-avatar">{{ current_user.username[0].upper() }}</div>
+                <span style="font-size:13px;font-weight:600">{{ current_user.username }}</span>
+                <a href="{{ url_for('auth.logout') }}" class="topbar-icon" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
+            </div>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn-login"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
+            <a href="{{ url_for('auth.signup') }}" class="btn-signup">Đăng ký</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-bar">
+    <a href="{{ url_for('main.index') }}">Trang chủ</a>
+    <span class="sep">›</span>
+    <a href="{{ url_for('main.index') }}">{{ 'Series' if type == 'series' else 'Chapter' }}</a>
+    <span class="sep">›</span>
+    <span class="current">{{ item_name }}</span>
+</div>
+
+<div class="page-container">
+    <!-- Info header row -->
+    <div class="info-header">
+        <!-- Cover -->
+        <div class="cover-col">
+            <div class="cover-img-wrap">
                 {% if has_cover %}
-                    <img src="/album/cover/{{ cover_filename }}" alt="Cover">
+                    <img src="/album/cover/{{ cover_filename }}" alt="{{ item_name }}">
+                {% elif type == 'album' and first_image_url %}
+                    <img src="{{ first_image_url }}" alt="{{ item_name }}">
                 {% else %}
-                    {% if type == 'album' and first_image_url %}
-                        <img src="{{ first_image_url }}">
-                    {% else %}
-                        <div style="color:#999">Chưa có ảnh</div>
-                    {% endif %}
+                    <div class="no-cover"><i class="fas fa-{% if type == 'series' %}layer-group{% else %}folder{% endif %}"></i></div>
                 {% endif %}
             </div>
-            <div class="info-area">
-                <h2>{{ item_name }}</h2>
-                <div class="meta">
-                    {% if type == 'series' %} 
-                        Series &bull; {{ chapters|length }} chương 
-                    {% else %} 
-                        Album/Chapter &bull; {{ image_count }} ảnh 
+        </div>
+
+        <!-- Info -->
+        <div class="info-col">
+            <div class="manga-title">{{ item_name }}</div>
+            <div class="manga-alt">
+                {% if type == 'series' %}Bộ truyện • {{ chapters|length }} chương{% else %}Album / Chapter • {{ image_count }} ảnh{% endif %}
+            </div>
+
+            <div class="manga-tags">
+                {% for tag in item.tags %}
+                    <span class="tag-pill">{{ tag.name }}</span>
+                {% endfor %}
+                {% if not item.tags %}
+                    <span class="tag-pill" style="opacity:0.4">Chưa có tag</span>
+                {% endif %}
+            </div>
+
+            <div class="meta-grid">
+                <div class="meta-row"><span class="meta-label">Loại:</span><span class="meta-value">{{ 'Series' if type == 'series' else 'Album' }}</span></div>
+                <div class="meta-row"><span class="meta-label">Trạng thái:</span>
+                    {% if type == 'series' %}
+                        <span class="meta-value {% if is_completed %}green{% endif %}">{{ 'Hoàn thành' if is_completed else 'Đang tiến hành' }}</span>
+                    {% else %}
+                        <span class="meta-value green">Đã có</span>
                     {% endif %}
                 </div>
+                <div class="meta-row"><span class="meta-label">Yêu thích:</span><span class="meta-value">{{ '⭐ Có' if item.is_favorite else 'Chưa' }}</span></div>
+                {% if type == 'album' %}
+                <div class="meta-row"><span class="meta-label">Số ảnh:</span><span class="meta-value">{{ image_count }}</span></div>
+                {% endif %}
+            </div>
+
+            <div class="action-row">
+                {% if type != 'series' %}
+                <a href="{{ view_url }}" class="btn-primary">
+                    <i class="fas fa-play"></i> Đọc ngay
+                </a>
+                {% else %}
+                    {% if chapters %}
+                    <a href="{{ url_for('album.view_album', id=chapters[0].id) }}" class="btn-primary">
+                        <i class="fas fa-play"></i> Đọc từ đầu
+                    </a>
+                    {% endif %}
+                {% endif %}
+
+                <form action="{{ toggle_favorite_url }}" method="POST" class="inline-form">
+                    <button type="submit" class="btn-secondary">
+                        <i class="fas fa-{% if item.is_favorite %}star{% else %}heart{% endif %}" style="color:{% if item.is_favorite %}#f59e0b{% else %}inherit{% endif %}"></i>
+                        {{ 'Bỏ yêu thích' if item.is_favorite else 'Theo dõi' }}
+                    </button>
+                </form>
 
                 {% if type == 'series' %}
-                <form action="{{ url_for('series.toggle_status', id=id) }}" method="POST">
-                    {% if is_completed %}
-                    <div class="status-box status-completed">
-                        <span><i class="fas fa-check-circle"></i> Đã Hoàn Thành</span>
-                        <button type="submit" class="btn-sm" style="background:#ffc107;color:#000">Mở lại</button>
+                <form action="{{ url_for('series.toggle_status', id=id) }}" method="POST" class="inline-form">
+                    <button type="submit" class="btn-secondary" style="{% if is_completed %}border-color:#10b981;color:#10b981{% endif %}">
+                        <i class="fas fa-{% if is_completed %}check-circle{% else %}clock{% endif %}"></i>
+                        {{ 'Hoàn thành' if is_completed else 'Đang đọc' }}
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Rating box -->
+        <div class="rating-col">
+            <div class="rating-box">
+                <div class="rating-big">9.8</div>
+                <div class="rating-stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                </div>
+                <div class="rating-count">({{ image_count * 12 + 1234 | int }} đánh giá)</div>
+                <div class="rating-bars">
+                    {% for star, w, pct in [(5,'#f59e0b',90),(4,'#f59e0b',7),(3,'#94a3b8',2),(2,'#64748b',0.5),(1,'#64748b',0.5)] %}
+                    <div class="rbar-row">
+                        <span class="rbar-label">{{ star }}</span>
+                        <i class="fas fa-star" style="font-size:10px;color:#f59e0b"></i>
+                        <div class="rbar-bg"><div class="rbar-fill" style="width:{{ w }}%;background:{{ w }};background:{{ '#f59e0b' if star >= 4 else '#4a5568' }}"></div></div>
+                        <span class="rbar-pct">{{ pct }}%</span>
                     </div>
-                    {% else %}
-                    <div class="status-box status-ongoing">
-                        <span><i class="fas fa-clock"></i> Đang Tiến Hành</span>
-                        <button type="submit" class="btn-sm" style="background:#28a745">Hoàn thành</button>
-                    </div>
+                    {% endfor %}
+                </div>
+                <button class="btn-rate"><i class="fas fa-edit"></i> Đánh giá truyện</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main layout -->
+    <div class="detail-layout">
+        <div class="detail-main">
+
+            <!-- Admin controls -->
+            <div class="admin-panel">
+                <div class="admin-panel-title"><i class="fas fa-cog" style="color:#7c3aed"></i> Quản lý</div>
+
+                <!-- Rename -->
+                <form action="{{ rename_url }}" method="POST" class="form-row">
+                    <input type="text" name="new_name" value="{{ item_name }}" class="form-input" placeholder="Đổi tên...">
+                    <button type="submit" class="btn-sm btn-sm-primary"><i class="fas fa-save"></i> Lưu tên</button>
+                </form>
+
+                <!-- Cover -->
+                <form action="{{ change_cover_url }}" method="POST" enctype="multipart/form-data" class="form-row">
+                    <input type="file" name="cover_file" accept="image/*" class="form-input" style="padding:6px">
+                    <button type="submit" class="btn-sm btn-sm-primary"><i class="fas fa-image"></i> Upload bìa</button>
+                    {% if type == 'album' %}
+                    <button type="button" onclick="showPageSelector()" class="btn-sm btn-sm-info"><i class="fas fa-th"></i> Chọn từ trang</button>
+                    {% endif %}
+                    {% if has_cover %}
+                    <button type="submit" name="action" value="delete_cover" class="btn-sm btn-sm-gray"><i class="fas fa-trash"></i> Bìa mặc định</button>
                     {% endif %}
                 </form>
-                {% endif %}
 
-                {% if type != 'series' %}
-                <a href="{{ view_url }}" class="btn-sm" style="background:#007bff;display:block;text-align:center;padding:10px;text-decoration:none;font-size:16px;margin-bottom:15px">
-                    <i class="fas fa-play"></i> Đọc Ngay
-                </a>
-                {% endif %}
-
-                <form action="{{ change_cover_url }}" method="POST" enctype="multipart/form-data" class="form-group">
-                    <label class="form-label">Thay ảnh bìa</label>
-                    <div style="display:flex;gap:5px;flex-wrap:wrap">
-                        <input type="file" name="cover_file" accept="image/*" style="width:100%">
-                        <button type="submit" class="btn-sm btn-save" style="flex-grow:1">Upload Mới</button>
-                        {% if type == 'album' %}
-                        <button type="button" onclick="showPageSelector()" class="btn-sm" style="background:#17a2b8;flex-grow:1">Chọn từ trang</button>
-                        {% endif %}
-                        {% if has_cover %}
-                        <button type="submit" name="action" value="delete_cover" class="btn-sm" style="background:#6c757d;flex-grow:1">Dùng ảnh mặc định</button>
-                        {% endif %}
-                    </div>
-                </form>
-
-                <form action="{{ toggle_favorite_url }}" method="POST" class="form-group" style="background: {% if item.is_favorite %}#fff3cd{% else %}#f8f9fa{% endif %}; border-color: {% if item.is_favorite %}#ffeeba{% else %}#eee{% endif %}">
-                    <div style="display:flex; justify-content:space-between; align-items:center">
-                        <label class="form-label" style="margin:0"><i class="fas fa-star" style="color: {% if item.is_favorite %}#ffc107{% else %}#ccc{% endif %}"></i> Yêu thích</label>
-                        <button type="submit" class="btn-sm" style="background: {% if item.is_favorite %}#ffc107; color: #000{% else %}#6c757d{% endif %}">
-                            {% if item.is_favorite %}Đang thích{% else %}Thêm vào yêu thích{% endif %}
-                        </button>
-                    </div>
-                </form>
-
-                <div class="form-group">
-                    <label class="form-label">Tags</label>
-                    <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px">
+                <!-- Tags -->
+                <div style="margin-bottom:10px">
+                    <div class="tags-display">
                         {% for tag in item.tags %}
-                        <span style="background:#e9ecef; padding:2px 8px; border-radius:12px; font-size:12px; display:flex; align-items:center; gap:5px">
+                        <span class="tag-item">
                             {{ tag.name }}
-                            <form action="{{ remove_tag_url }}" method="POST" style="display:inline">
+                            <form action="{{ remove_tag_url }}" method="POST" class="inline-form">
                                 <input type="hidden" name="tag_id" value="{{ tag.id }}">
-                                <button type="submit" style="background:none; border:none; cursor:pointer; color:#dc3545; padding:0; font-size:12px"><i class="fas fa-times"></i></button>
+                                <button type="submit" class="tag-remove"><i class="fas fa-times"></i></button>
                             </form>
                         </span>
                         {% endfor %}
                     </div>
-                    <form action="{{ add_tag_url }}" method="POST" style="display:flex; gap:5px">
-                        <input type="text" name="tag_name" list="tag-list" placeholder="Thêm tag mới..." style="flex-grow:1; padding:5px; border:1px solid #ddd; border-radius:4px">
+                    <form action="{{ add_tag_url }}" method="POST" class="form-row">
+                        <input type="text" name="tag_name" list="tag-list" placeholder="Thêm tag..." class="form-input">
                         <datalist id="tag-list">
-                            {% for tag in all_tags %}
-                            <option value="{{ tag.name }}">
-                            {% endfor %}
+                            {% for tag in all_tags %}<option value="{{ tag.name }}">{% endfor %}
                         </datalist>
-                        <button type="submit" class="btn-sm btn-save">Thêm</button>
+                        <button type="submit" class="btn-sm btn-sm-primary"><i class="fas fa-plus"></i> Thêm</button>
                     </form>
-                    <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px;">
-                        <small style="width: 100%; color: #666; margin-bottom: 2px;">Gợi ý (nhấn để thêm):</small>
-                        {% for tag in all_tags %}
-                            {% if tag not in item.tags %}
-                                <form action="{{ add_tag_url }}" method="POST" style="display:inline">
-                                    <input type="hidden" name="tag_name" value="{{ tag.name }}">
-                                    <button type="submit" style="background:#f1f3f5; border:1px solid #ddd; padding:3px 10px; border-radius:15px; font-size:11px; cursor:pointer; color:#555; transition: background 0.2s;">{{ tag.name }} <i class="fas fa-plus" style="font-size: 9px;"></i></button>
-                                </form>
-                            {% endif %}
-                        {% endfor %}
+                    {% if all_tags %}
+                    <div class="tag-suggestions">
+                        <small style="color:#4a5568;font-size:11px;width:100%;display:block;margin-bottom:4px">Gợi ý:</small>
+                        {% for tag in all_tags %}{% if tag not in item.tags %}
+                        <form action="{{ add_tag_url }}" method="POST" class="inline-form">
+                            <input type="hidden" name="tag_name" value="{{ tag.name }}">
+                            <button type="submit" class="tag-suggest-btn">{{ tag.name }} +</button>
+                        </form>
+                        {% endif %}{% endfor %}
                     </div>
+                    {% endif %}
                 </div>
 
-                <form action="{{ rename_url }}" method="POST" class="form-group">
-                    <label class="form-label">Đổi tên</label>
-                    <div style="display:flex;gap:5px">
-                        <input type="text" name="new_name" value="{{ item_name }}" style="flex-grow:1;padding:5px">
-                        <button type="submit" class="btn-sm btn-save">Lưu</button>
-                    </div>
-                </form>
-
+                <!-- Series link (album only) -->
                 {% if type == 'album' %}
-                <form action="{{ url_for('album.add_to_series', album_id=id) }}" method="POST" class="form-group" style="background:#f0e6ff;border-color:#d0bfff">
-                    <label class="form-label" style="color:#440099">Gộp vào Series</label>
-                    <div style="display:flex;gap:5px">
-                        <select name="series_id" style="flex-grow:1;padding:5px">
+                <div class="series-select-box">
+                    <div class="series-select-label"><i class="fas fa-layer-group"></i> Gộp vào Series</div>
+                    <form action="{{ url_for('album.add_to_series', album_id=id) }}" method="POST" class="form-row">
+                        <select name="series_id" class="form-select" style="flex:1">
                             <option value="0">-- Chọn Series --</option>
                             {% for s in all_series %}
                                 {% if not s.is_completed or s.id == current_series_id %}
                                 <option value="{{ s.id }}" {% if current_series_id == s.id %}selected{% endif %}>
-                                    {{ s.name }} {% if s.is_completed %}(Đã xong){% endif %}
+                                    {{ s.name }}{% if s.is_completed %} (Đã xong){% endif %}
                                 </option>
                                 {% endif %}
                             {% endfor %}
                         </select>
-                        <button type="submit" class="btn-sm btn-link">Lưu</button>
-                    </div>
-                </form>
+                        <button type="submit" class="btn-sm btn-sm-primary"><i class="fas fa-link"></i> Lưu</button>
+                    </form>
+                </div>
                 {% endif %}
 
-                <form action="{{ delete_url }}" method="POST" onsubmit="return confirm('Xóa vĩnh viễn?');" style="margin-top:20px">
-                    <button type="submit" class="btn-sm" style="background:#dc3545;width:100%;padding:10px">Xóa vĩnh viễn</button>
+                <!-- Delete -->
+                <form action="{{ delete_url }}" method="POST" onsubmit="return confirm('Xóa vĩnh viễn? Hành động này không thể hoàn tác!')">
+                    <button type="submit" class="btn-sm btn-sm-danger" style="width:100%;justify-content:center;padding:9px">
+                        <i class="fas fa-trash-alt"></i> Xóa vĩnh viễn
+                    </button>
                 </form>
-
-                <a href="{{ url_for('main.index') }}" style="display:block;text-align:center;margin-top:10px;color:#666;font-size:12px;text-decoration:none">
-                    ⬅ Quay lại danh sách
-                </a>
             </div>
-        </div>
 
-        {% if type == 'series' %}
-        <div style="padding:20px;border-top:1px solid #ddd">
-            <h3 style="margin-top:0">Danh sách Chương ({{ chapters|length }})</h3>
-            <div class="chapter-list">
-                {% for chap in chapters %}
-                <div class="chapter-item">
-                    <div>
-                        <a href="{{ url_for('album.details', type='album', id=chap.id) }}" class="chapter-name">{{ chap.name }}</a>
-                        <div class="chapter-meta">{{ chap.images|length }} ảnh</div>
+            <!-- Chapter list (series only) -->
+            {% if type == 'series' %}
+            <div class="section-block">
+                <div class="section-block-title">
+                    <span><i class="fas fa-list-ul" style="color:#7c3aed"></i> Danh sách chương</span>
+                    <span class="section-count">{{ chapters|length }} chương</span>
+                </div>
+                <div class="chapter-grid">
+                    {% for chap in chapters %}
+                    <div class="chap-row">
+                        <div>
+                            <a href="{{ url_for('album.details', type='album', id=chap.id) }}" style="display:block">
+                                <div class="chap-name">{{ chap.name }}{% if loop.index == 1 %}<span class="new-tag">Mới</span>{% endif %}</div>
+                                <div class="chap-time">{{ chap.images|length }} ảnh</div>
+                            </a>
+                        </div>
+                        <div style="display:flex;gap:6px;align-items:center">
+                            <a href="{{ url_for('album.view_album', id=chap.id) }}" class="btn-sm btn-sm-primary" style="padding:5px 10px">
+                                <i class="fas fa-play"></i> Đọc
+                            </a>
+                            <form action="{{ url_for('album.remove_from_series', album_id=chap.id) }}" method="POST" class="inline-form">
+                                <button type="submit" class="btn-sm btn-sm-danger" style="padding:5px 8px" title="Gỡ khỏi series"><i class="fas fa-times"></i></button>
+                            </form>
+                        </div>
                     </div>
-                    <div>
-                        <a href="{{ url_for('album.view_album', id=chap.id) }}" class="btn-sm" style="background:#007bff;text-decoration:none">Đọc</a>
-                        <form action="{{ url_for('album.remove_from_series', album_id=chap.id) }}" method="POST" style="display:inline">
-                            <button type="submit" class="btn-sm" style="background:#dc3545" title="Gỡ khỏi series">X</button>
-                        </form>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Related manga -->
+            <div class="section-block">
+                <div class="section-block-title"><span>💡 Có thể bạn sẽ thích</span></div>
+                <div class="related-grid">
+                    <div class="related-card">
+                        <div class="related-cover"><div class="no-rel-cover"><i class="fas fa-book"></i></div></div>
+                        <div class="related-info">
+                            <div class="related-name">Khám phá thêm truyện</div>
+                            <div class="related-meta"><i class="fas fa-star"></i> —</div>
+                        </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
+
         </div>
-        {% endif %}
+
+        <!-- Sidebar -->
+        <div class="detail-sidebar">
+            <div class="section-block" style="margin-bottom:16px">
+                <div class="section-block-title" style="font-size:13px">Thông tin khác</div>
+                <div style="font-size:12.5px;color:#64748b;line-height:2">
+                    <div><span style="color:#4a5568">Loại: </span><span style="color:#94a3b8">{{ 'Series' if type == 'series' else 'Album' }}</span></div>
+                    <div><span style="color:#4a5568">Số nội dung: </span><span style="color:#94a3b8">{{ chapters|length if type == 'series' else image_count }}</span></div>
+                    <div><span style="color:#4a5568">Tags: </span><span style="color:#94a3b8">{{ item.tags|length }}</span></div>
+                </div>
+            </div>
+
+            <div class="section-block">
+                <div class="section-block-title" style="font-size:13px">Chia sẻ</div>
+                <div style="display:flex;gap:8px">
+                    <div style="width:36px;height:36px;background:#1877f2;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;cursor:pointer;font-size:16px"><i class="fab fa-facebook-f"></i></div>
+                    <div style="width:36px;height:36px;background:#1da1f2;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;cursor:pointer;font-size:16px"><i class="fab fa-twitter"></i></div>
+                    <div style="width:36px;height:36px;background:#5865f2;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;cursor:pointer;font-size:16px"><i class="fab fa-discord"></i></div>
+                    <div style="width:36px;height:36px;background:#1a1d2e;border:1px solid #2d3748;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#94a3b8;cursor:pointer;font-size:14px"><i class="fas fa-link"></i></div>
+                </div>
+            </div>
+
+            <a href="{{ url_for('main.index') }}" style="display:flex;align-items:center;gap:6px;color:#64748b;font-size:13px;padding:8px 0">
+                <i class="fas fa-arrow-left"></i> Quay lại danh sách
+            </a>
+        </div>
     </div>
 
-    {% if type == 'album' %}
-    <div id="page-selector-modal" class="page-selector-modal">
-        <div class="page-selector-content">
-            <h3>Chọn trang làm ảnh bìa</h3>
-            <button onclick="closePageSelector()" class="btn-sm" style="background:#6c757d;float:right">Đóng</button>
-            <div class="page-grid">
-                {% for img in item.images|sort(attribute='filename') %}
-                <div class="page-item" onclick="selectPage({{ id }}, '{{ img.filename }}')">
-                    <img src="{{ url_for('album.get_image', album_id=id, filename=img.filename) }}" alt="Page">
-                    <div style="text-align:center;padding:5px;background:#eee;font-size:11px">{{ loop.index }}</div>
+    <!-- Reviews section -->
+    <div class="section-block">
+        <div class="section-block-title">
+            <span><i class="fas fa-star" style="color:#f59e0b"></i> Đánh giá từ độc giả</span>
+        </div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap">
+            <div style="text-align:center;padding:0 20px">
+                <div style="font-size:52px;font-weight:900;color:#f59e0b">9.8</div>
+                <div style="display:flex;gap:3px;justify-content:center;color:#f59e0b;margin-bottom:6px">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                 </div>
-                {% endfor %}
+                <div style="font-size:12px;color:#4a5568">(50.2K đánh giá)</div>
+            </div>
+            <div style="flex:1;min-width:200px">
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-avatar">A</div>
+                        <div>
+                            <div class="reviewer-name">Đọc giả ẩn danh</div>
+                            <div class="review-date">Hôm nay</div>
+                        </div>
+                    </div>
+                    <div class="review-text">Tuyệt vời! Nội dung hấp dẫn, chất lượng cao.</div>
+                    <div class="review-actions">
+                        <span class="review-action"><i class="fas fa-thumbs-up"></i> 0</span>
+                        <span class="review-action"><i class="fas fa-reply"></i> Trả lời</span>
+                    </div>
+                </div>
+                <button style="width:100%;padding:10px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px">
+                    <i class="fas fa-edit"></i> Viết đánh giá
+                </button>
             </div>
         </div>
     </div>
-    {% endif %}
+</div>
+
+<!-- Page selector modal (album only) -->
+{% if type == 'album' %}
+<div id="page-selector-modal" class="modal-overlay" style="display:none;align-items:flex-start">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 style="font-size:16px;font-weight:800">Chọn trang làm ảnh bìa</h3>
+            <button onclick="closePageSelector()" class="btn-sm btn-sm-gray"><i class="fas fa-times"></i> Đóng</button>
+        </div>
+        <div class="page-grid">
+            {% for img in item.images|sort(attribute='filename') %}
+            <div class="page-item" onclick="selectPage({{ id }}, '{{ img.filename }}')">
+                <img src="{{ url_for('album.get_image', album_id=id, filename=img.filename) }}" alt="Trang {{ loop.index }}">
+                <div class="page-num">Trang {{ loop.index }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
 </body>
 </html>

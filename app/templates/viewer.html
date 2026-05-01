@@ -1,114 +1,551 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="vi">
 <head>
     <title>{{ album_name }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/viewer.css') }}">
-</head>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; display: flex; }
+        a { text-decoration: none; color: inherit; }
 
-<body>
-    <header>
-        <div class="nav-left"><a href="{{ url_for('album.details', type='album', id=album_id) }}" class="back-btn"><i
-                    class="fas fa-arrow-left"></i></a>
-            <div class="title">{{ album_name }}</div>
-        </div>
-        <div class="chap-nav"><a href="{{ url_for('album.view_album', id=prev_id) if prev_id else '#' }}"
-                class="nav-btn {{ 'disabled' if not prev_id }}"><i class="fas fa-chevron-left"></i></a><a
-                href="{{ url_for('album.view_album', id=next_id) if next_id else '#' }}"
-                class="nav-btn {{ 'disabled' if not next_id }}"><i class="fas fa-chevron-right"></i></a></div>
-    </header>
-    <div id="viewer-container">
-        <div class="image-container">
-            {% for img in images %}<img class="page-img"
-                src="{{ url_for('album.get_image', album_id=album_id, filename=img.filename) }}" loading="lazy">{% endfor %}
-        </div>
-        <div class="bottom-nav">{% if prev_id %}<a href="{{ url_for('album.view_album', id=prev_id) }}"
-                class="big-btn btn-prev"><i class="fas fa-arrow-left"></i> Chap Trước</a>{% endif %}{% if next_id %}<a
-                href="{{ url_for('album.view_album', id=next_id) }}" class="big-btn btn-next">Chap Sau <i
-                    class="fas fa-arrow-right"></i></a>{% endif %}</div>{% if not next_id and not prev_id %}<div
-            style="color:#777;margin-top:20px">Hết danh sách</div>{% endif %}
-    </div>
-    <footer><button class="zoom-btn" onclick="zoom(-10)">-</button><span id="zoom-level">100%</span><button
-            class="zoom-btn" onclick="zoom(10)">+</button></footer>
-    <div id="click-layer">
-        <div id="prev-area"></div>
-        <div id="center-area"></div>
-        <div id="next-area"></div>
-    </div>
-
-    <a href="{{ url_for('main.index') }}" id="home-fab" title="Về trang chủ"><i class="fas fa-home"></i></a>
-
-    <script>
-        let currentWidth = 100;
-        let lastScrollTop = 0;
-        const homeFab = document.getElementById('home-fab');
-
-        window.addEventListener('scroll', function() {
-            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            if (scrollTop > lastScrollTop && scrollTop > 50) {
-                // Scroll down
-                header.style.transform = 'translateY(-100%)';
-                footer.style.transform = 'translateY(100%)';
-                homeFab.style.opacity = '0';
-                homeFab.style.pointerEvents = 'none';
-            } else {
-                // Scroll up
-                header.style.transform = 'translateY(0)';
-                footer.style.transform = 'translateY(0)';
-                homeFab.style.opacity = '1';
-                homeFab.style.pointerEvents = 'auto';
-            }
-            lastScrollTop = scrollTop;
-        });
-
-        function zoom(delta) {
-            currentWidth += delta;
-            if (currentWidth < 20) currentWidth = 20;
-            if (currentWidth > 300) currentWidth = 300;
-            document.getElementById('zoom-level').textContent = currentWidth + '%';
-            document.querySelectorAll('.page-img').forEach(img => {
-                img.style.width = currentWidth + '%'
-            })
+        /* Left icon sidebar */
+        .left-sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 56px; background: #13151f; border-right: 1px solid #1e2336;
+            display: flex; flex-direction: column; align-items: center; z-index: 200;
+        }
+        .left-logo {
+            width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
+            border-bottom: 1px solid #1e2336; flex-shrink: 0;
+        }
+        .left-logo .logo-icon {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: white;
+        }
+        .left-icon {
+            width: 44px; height: 44px; margin: 4px 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+            color: #4a5568; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 15px;
+            position: relative;
+        }
+        .left-icon:hover { background: #1a1d2e; color: #a78bfa; }
+        .left-icon.active { color: #7c3aed; }
+        .left-icon span { font-size: 9px; font-weight: 600; }
+        .left-icon .notif {
+            position: absolute; top: 4px; right: 4px;
+            background: #ef4444; color: white; font-size: 8px; font-weight: 700;
+            width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
         }
 
-        document.addEventListener('keydown', function (event) {
-            if (event.key === "ArrowLeft") {
-                {% if prev_id %}
-                window.location.href = "{{ url_for('album.view_album', id=prev_id) }}";
-                {% endif %}
-            } else if (event.key === "ArrowRight") {
-                {% if next_id %}
-                window.location.href = "{{ url_for('album.view_album', id=next_id) }}";
-                {% endif %}
-            }
-        });
+        /* Top header */
+        .top-header {
+            position: fixed; top: 0; left: 56px; right: 300px;
+            height: 52px; background: rgba(13,13,26,0.97); border-bottom: 1px solid #1e2336;
+            display: flex; align-items: center; padding: 0 12px; gap: 10px; z-index: 150;
+            transition: transform 0.3s ease;
+        }
+        .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #94a3b8; flex: 1; min-width: 0; }
+        .breadcrumb a { color: #94a3b8; }
+        .breadcrumb a:hover { color: #a78bfa; }
+        .breadcrumb .sep { color: #4a5568; }
+        .breadcrumb .current { color: #7c3aed; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .hdr-btn {
+            width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+            color: #94a3b8; border-radius: 6px; cursor: pointer; transition: all 0.15s; font-size: 14px;
+        }
+        .hdr-btn:hover { background: #1a1d2e; color: #e2e8f0; }
+        .hdr-divider { width: 1px; height: 24px; background: #1e2336; }
 
-        const header = document.querySelector('header');
-        const footer = document.querySelector('footer');
-        const prevArea = document.getElementById('prev-area');
-        const centerArea = document.getElementById('center-area');
-        const nextArea = document.getElementById('next-area');
+        /* Right panel */
+        .right-panel {
+            position: fixed; top: 0; right: 0; bottom: 0;
+            width: 300px; background: #13151f; border-left: 1px solid #1e2336;
+            display: flex; flex-direction: column; z-index: 150; overflow: hidden;
+        }
+        .right-panel-tabs {
+            display: flex; border-bottom: 1px solid #1e2336; flex-shrink: 0;
+        }
+        .rpanel-tab {
+            flex: 1; padding: 14px 8px; text-align: center; font-size: 12px; font-weight: 700; color: #4a5568; cursor: pointer; transition: all 0.15s;
+        }
+        .rpanel-tab.active { color: #a78bfa; border-bottom: 2px solid #7c3aed; }
+        .rpanel-tab:hover { color: #94a3b8; }
 
-        centerArea.addEventListener('click', () => {
-            header.hidden = !header.hidden;
-            footer.hidden = !footer.hidden;
-        });
+        .chapter-list-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 14px; border-bottom: 1px solid #1e2336; flex-shrink: 0;
+        }
+        .chapter-list-title { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+        .chapter-filter-icon { color: #4a5568; cursor: pointer; font-size: 13px; }
 
-        prevArea.addEventListener('click', () => {
+        .chapter-list { flex: 1; overflow-y: auto; padding: 6px 8px; }
+        .chapter-list::-webkit-scrollbar { width: 4px; }
+        .chapter-list::-webkit-scrollbar-track { background: #13151f; }
+        .chapter-list::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 2px; }
+        .chapter-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 10px; border-radius: 6px; cursor: pointer; margin-bottom: 2px;
+            transition: background 0.15s; font-size: 12.5px; color: #94a3b8;
+        }
+        .chapter-item:hover { background: #1a1d2e; color: #e2e8f0; }
+        .chapter-item.active { background: #1e1b3a; color: #a78bfa; font-weight: 700; }
+        .chapter-item.active .chap-icon { color: #7c3aed; }
+        .chap-icon { color: #2d3748; font-size: 10px; }
+
+        /* Reading settings */
+        .settings-panel { padding: 14px; overflow-y: auto; }
+        .settings-panel::-webkit-scrollbar { width: 4px; }
+        .settings-panel::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 2px; }
+        .setting-group { margin-bottom: 18px; }
+        .setting-label { font-size: 11px; font-weight: 700; color: #4a5568; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+        .setting-options { display: flex; gap: 6px; flex-wrap: wrap; }
+        .setting-btn {
+            flex: 1; min-width: 60px; padding: 8px 6px; border: 1px solid #2d3748; background: #1a1d2e;
+            color: #94a3b8; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; text-align: center; transition: all 0.15s;
+        }
+        .setting-btn:hover { border-color: #7c3aed; color: #a78bfa; }
+        .setting-btn.active { background: #7c3aed; border-color: #7c3aed; color: white; }
+        .size-control { display: flex; align-items: center; gap: 10px; }
+        .size-btn {
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            background: #1a1d2e; border: 1px solid #2d3748; color: #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 700;
+        }
+        .size-btn:hover { border-color: #7c3aed; color: #a78bfa; }
+        .size-value { flex: 1; text-align: center; font-size: 13px; font-weight: 700; color: #e2e8f0; }
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+        .toggle-label { font-size: 12.5px; color: #94a3b8; }
+        .toggle {
+            width: 40px; height: 22px; background: #2d3748; border-radius: 11px; cursor: pointer;
+            position: relative; transition: background 0.2s; flex-shrink: 0;
+        }
+        .toggle.on { background: #7c3aed; }
+        .toggle::after {
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 16px; height: 16px; background: white; border-radius: 50%; transition: left 0.2s;
+        }
+        .toggle.on::after { left: 21px; }
+
+        /* Main viewer area */
+        .viewer-wrap {
+            margin-left: 56px; margin-right: 300px; padding-top: 52px; padding-bottom: 70px;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+        .image-container { width: 100%; max-width: 800px; }
+        .page-img { display: block; width: 100%; height: auto; margin-bottom: 4px; }
+
+        .bottom-nav-btns {
+            width: 100%; max-width: 600px; margin: 20px auto; padding: 0 10px;
+            display: flex; gap: 10px;
+        }
+        .nav-big-btn {
+            flex: 1; padding: 14px; border-radius: 8px; color: white; text-align: center;
+            font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.15s;
+        }
+        .nav-big-btn:hover { opacity: 0.85; }
+        .btn-prev-big { background: #1e2336; border: 1px solid #2d3748; color: #94a3b8; }
+        .btn-next-big { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+
+        /* Bottom bar */
+        .bottom-bar {
+            position: fixed; bottom: 0; left: 56px; right: 300px;
+            background: rgba(13,13,26,0.97); border-top: 1px solid #1e2336;
+            padding: 0 16px; height: 60px; display: flex; align-items: center; gap: 12px; z-index: 150;
+            transition: transform 0.3s ease;
+        }
+        .chap-nav-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+            border: 1px solid #2d3748; color: #94a3b8; background: #1a1d2e; white-space: nowrap; flex-shrink: 0;
+        }
+        .chap-nav-btn:hover { border-color: #7c3aed; color: #a78bfa; }
+        .chap-nav-btn.next { background: linear-gradient(135deg, #7c3aed, #a855f7); border-color: #7c3aed; color: white; }
+        .chap-nav-btn.disabled { opacity: 0.3; pointer-events: none; }
+        .progress-wrap { flex: 1; display: flex; align-items: center; gap: 10px; }
+        .progress-bar-bg {
+            flex: 1; height: 4px; background: #1e2336; border-radius: 2px; cursor: pointer; position: relative;
+        }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #7c3aed, #a855f7); border-radius: 2px; width: 0%; transition: width 0.1s; }
+        .progress-pct { font-size: 12px; color: #64748b; font-weight: 600; width: 36px; text-align: right; flex-shrink: 0; }
+        .chap-label {
+            font-size: 12px; color: #94a3b8; cursor: pointer;
+            display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 6px;
+        }
+        .chap-label:hover { background: #1a1d2e; }
+
+        /* Floating home btn */
+        #home-fab {
+            position: fixed; bottom: 80px; right: 320px;
+            width: 42px; height: 42px; background: #1a1d2e; border: 1px solid #2d3748;
+            color: #94a3b8; border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 16px; z-index: 151; transition: all 0.2s;
+        }
+        #home-fab:hover { background: #7c3aed; border-color: #7c3aed; color: white; }
+
+        /* Click zones */
+        #click-layer { position: fixed; top: 52px; left: 56px; right: 300px; bottom: 60px; z-index: 10; display: flex; }
+        #prev-area { flex: 1; }
+        #center-area { flex: 2; }
+        #next-area { flex: 1; }
+
+        /* Panel tab content */
+        .panel-content { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+        .panel-content.active { display: flex; }
+
+        /* Scrollbar global */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<!-- Left icon sidebar -->
+<nav class="left-sidebar">
+    <div class="left-logo">
+        <div class="logo-icon"><i class="fas fa-book-open"></i></div>
+    </div>
+    <a href="{{ url_for('album.details', type='album', id=album_id) }}" class="left-icon" title="Danh sách">
+        <i class="fas fa-list"></i>
+        <span>Danh sách</span>
+    </a>
+    <div class="left-icon active" id="btn-chapters" title="Chương" onclick="switchTab('chapters')">
+        <i class="fas fa-bars"></i>
+        <span>Chương</span>
+    </div>
+    <div class="left-icon" title="Bình luận" onclick="switchTab('settings')">
+        <i class="fas fa-comment"></i>
+        <span>Bình luận</span>
+        <span class="notif">9+</span>
+    </div>
+    <div class="left-icon" title="Thích">
+        <i class="fas fa-heart"></i>
+        <span>Thích</span>
+    </div>
+    <div class="left-icon" title="Lịch sử">
+        <i class="fas fa-history"></i>
+        <span>Lịch sử</span>
+    </div>
+    <div class="left-icon" title="Theo dõi">
+        <i class="fas fa-bell"></i>
+        <span>Theo dõi</span>
+    </div>
+    <div class="left-icon" title="Tải xuống">
+        <i class="fas fa-download"></i>
+        <span>Tải xuống</span>
+    </div>
+    <div class="left-icon" style="margin-top:auto;margin-bottom:8px" title="Báo lỗi">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Báo lỗi</span>
+    </div>
+</nav>
+
+<!-- Top header -->
+<header class="top-header" id="top-header">
+    <div class="breadcrumb">
+        <a href="{{ url_for('main.index') }}"><i class="fas fa-home"></i></a>
+        <span class="sep">›</span>
+        <a href="{{ url_for('album.details', type='album', id=album_id) }}">{{ album_name }}</a>
+        <span class="sep">›</span>
+        <span class="current">Đang đọc</span>
+    </div>
+    <div class="header-actions">
+        <div class="hdr-btn" title="Ẩn UI" onclick="toggleUI()"><i class="fas fa-eye-slash"></i></div>
+        <div class="hdr-btn" title="Về đầu" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fas fa-arrow-up"></i></div>
+        <div class="hdr-divider"></div>
+        {% if prev_id %}
+        <a href="{{ url_for('album.view_album', id=prev_id) }}" class="hdr-btn" title="Chương trước"><i class="fas fa-chevron-left"></i></a>
+        {% else %}
+        <div class="hdr-btn" style="opacity:0.3"><i class="fas fa-chevron-left"></i></div>
+        {% endif %}
+        {% if next_id %}
+        <a href="{{ url_for('album.view_album', id=next_id) }}" class="hdr-btn" title="Chương tiếp"><i class="fas fa-chevron-right"></i></a>
+        {% else %}
+        <div class="hdr-btn" style="opacity:0.3"><i class="fas fa-chevron-right"></i></div>
+        {% endif %}
+        <div class="hdr-divider"></div>
+        <div class="hdr-btn" onclick="switchTab('settings')" title="Cài đặt"><i class="fas fa-cog"></i></div>
+    </div>
+</header>
+
+<!-- Right panel -->
+<div class="right-panel" id="right-panel">
+    <div class="right-panel-tabs">
+        <div class="rpanel-tab active" id="tab-chapters" onclick="switchTab('chapters')">Danh sách chương</div>
+        <div class="rpanel-tab" id="tab-settings" onclick="switchTab('settings')">Cài đặt đọc</div>
+    </div>
+
+    <!-- Chapters panel -->
+    <div class="panel-content active" id="panel-chapters">
+        <div class="chapter-list-header">
+            <span class="chapter-list-title">{{ album_name }}</span>
+            <i class="fas fa-sliders-h chapter-filter-icon"></i>
+        </div>
+        <div class="chapter-list" id="chapter-list">
             {% if prev_id %}
-            window.location.href = "{{ url_for('album.view_album', id=prev_id) }}";
+            <a href="{{ url_for('album.view_album', id=prev_id) }}" class="chapter-item">
+                <span>Chương trước</span>
+                <i class="fas fa-chevron-right chap-icon"></i>
+            </a>
             {% endif %}
-        });
-
-        nextArea.addEventListener('click', () => {
+            <div class="chapter-item active">
+                <span>{{ album_name }}</span>
+                <i class="fas fa-volume-up chap-icon"></i>
+            </div>
             {% if next_id %}
-            window.location.href = "{{ url_for('album.view_album', id=next_id) }}";
+            <a href="{{ url_for('album.view_album', id=next_id) }}" class="chapter-item">
+                <span>Chương tiếp theo</span>
+                <i class="fas fa-chevron-right chap-icon"></i>
+            </a>
             {% endif %}
+        </div>
+    </div>
+
+    <!-- Settings panel -->
+    <div class="panel-content" id="panel-settings">
+        <div class="settings-panel">
+            <div class="setting-group">
+                <div class="setting-label">Kiểu đọc</div>
+                <div class="setting-options">
+                    <div class="setting-btn active" onclick="setReadMode(this)">Cuộn đọc</div>
+                    <div class="setting-btn" onclick="setReadMode(this)">Lật trang</div>
+                </div>
+            </div>
+            <div class="setting-group">
+                <div class="setting-label">Chế độ</div>
+                <div class="setting-options">
+                    <div class="setting-btn" onclick="setTheme(this,'light')">Sáng</div>
+                    <div class="setting-btn active" onclick="setTheme(this,'dark')">Tối</div>
+                    <div class="setting-btn" onclick="setTheme(this,'sepia')">Sepia</div>
+                </div>
+            </div>
+            <div class="setting-group">
+                <div class="setting-label">Kích thước ảnh</div>
+                <div class="size-control">
+                    <div class="size-btn" onclick="zoom(-10)">−</div>
+                    <div class="size-value" id="zoom-level">100%</div>
+                    <div class="size-btn" onclick="zoom(10)">+</div>
+                </div>
+            </div>
+            <div class="setting-group">
+                <div class="setting-label">Bề rộng trang</div>
+                <div class="setting-options">
+                    <div class="setting-btn" onclick="setWidth(this,600)">Thu nhỏ</div>
+                    <div class="setting-btn active" onclick="setWidth(this,800)">Vừa</div>
+                    <div class="setting-btn" onclick="setWidth(this,1100)">Rộng</div>
+                </div>
+            </div>
+            <div class="setting-group">
+                <div class="setting-label">Tự động cuộn</div>
+                <div class="toggle-row">
+                    <span class="toggle-label">Bật tự động cuộn trang</span>
+                    <div class="toggle" id="auto-scroll-toggle" onclick="toggleAutoScroll(this)"></div>
+                </div>
+            </div>
+            <div class="setting-group">
+                <div class="setting-label">Hiệu ứng chuyển trang</div>
+                <div class="toggle-row">
+                    <span class="toggle-label">Hiệu ứng chuyển trang mượt</span>
+                    <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+            </div>
+            <div class="setting-group">
+                <div class="setting-label" style="display:flex;align-items:center;justify-content:space-between">
+                    Phím tắt <i class="fas fa-question-circle" style="font-size:12px;cursor:pointer"></i>
+                </div>
+                <div style="font-size:11px;color:#4a5568;line-height:1.6">
+                    <div>← → : Chuyển chương</div>
+                    <div>Space : Cuộn xuống</div>
+                    <div>H : Ẩn/hiện UI</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main viewer -->
+<div class="viewer-wrap" id="viewer-wrap">
+    <div class="image-container" id="image-container">
+        {% for img in images %}
+        <img class="page-img" id="page-{{ loop.index }}"
+             src="{{ url_for('album.get_image', album_id=album_id, filename=img.filename) }}" loading="lazy"
+             alt="Trang {{ loop.index }}">
+        {% endfor %}
+    </div>
+
+    <div class="bottom-nav-btns">
+        {% if prev_id %}
+        <a href="{{ url_for('album.view_album', id=prev_id) }}" class="nav-big-btn btn-prev-big">
+            <i class="fas fa-arrow-left"></i> Chương trước
+        </a>
+        {% endif %}
+        {% if next_id %}
+        <a href="{{ url_for('album.view_album', id=next_id) }}" class="nav-big-btn btn-next-big">
+            Chương tiếp theo <i class="fas fa-arrow-right"></i>
+        </a>
+        {% endif %}
+        {% if not next_id and not prev_id %}
+        <div style="color:#4a5568;text-align:center;width:100%;padding:20px 0;font-size:13px">
+            <i class="fas fa-check-circle" style="color:#10b981;margin-right:6px"></i> Bạn đã đọc hết!
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Bottom bar -->
+<div class="bottom-bar" id="bottom-bar">
+    {% if prev_id %}
+    <a href="{{ url_for('album.view_album', id=prev_id) }}" class="chap-nav-btn">
+        <i class="fas fa-chevron-left"></i> Chương trước
+    </a>
+    {% else %}
+    <div class="chap-nav-btn disabled"><i class="fas fa-chevron-left"></i> Chương trước</div>
+    {% endif %}
+
+    <div class="progress-wrap">
+        <div class="progress-bar-bg" id="progress-bg" onclick="seekProgress(event)">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+    </div>
+
+    <div class="chap-label">
+        <span id="chap-label-text">Trang 1 / {{ images|length }}</span>
+        <i class="fas fa-chevron-up"></i>
+    </div>
+
+    {% if next_id %}
+    <a href="{{ url_for('album.view_album', id=next_id) }}" class="chap-nav-btn next">
+        Chương tiếp theo <i class="fas fa-chevron-right"></i>
+    </a>
+    {% else %}
+    <div class="chap-nav-btn disabled">Chương tiếp theo <i class="fas fa-chevron-right"></i></div>
+    {% endif %}
+</div>
+
+<a href="{{ url_for('main.index') }}" id="home-fab" title="Về trang chủ">
+    <i class="fas fa-home"></i>
+</a>
+
+<div id="click-layer">
+    <div id="prev-area"></div>
+    <div id="center-area"></div>
+    <div id="next-area"></div>
+</div>
+
+<script>
+    const topHeader = document.getElementById('top-header');
+    const bottomBar = document.getElementById('bottom-bar');
+    const homeFab = document.getElementById('home-fab');
+    const progressFill = document.getElementById('progress-fill');
+    const chapLabelText = document.getElementById('chap-label-text');
+    const totalPages = {{ images|length }};
+    let currentWidth = 100;
+    let maxWidth = 800;
+    let lastScrollTop = 0;
+    let uiHidden = false;
+
+    // Scroll tracking
+    window.addEventListener('scroll', function () {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = docHeight > 0 ? Math.round((scrollTop / docHeight) * 100) : 0;
+
+        progressFill.style.width = pct + '%';
+
+        const currentPage = Math.max(1, Math.ceil((scrollTop / docHeight) * totalPages));
+        chapLabelText.textContent = `Trang ${Math.min(currentPage, totalPages)} / ${totalPages}`;
+
+        if (scrollTop > lastScrollTop && scrollTop > 80) {
+            topHeader.style.transform = 'translateY(-100%)';
+            bottomBar.style.transform = 'translateY(100%)';
+            homeFab.style.opacity = '0';
+            homeFab.style.pointerEvents = 'none';
+        } else {
+            topHeader.style.transform = '';
+            bottomBar.style.transform = '';
+            homeFab.style.opacity = '1';
+            homeFab.style.pointerEvents = 'auto';
+        }
+        lastScrollTop = scrollTop;
+    });
+
+    function toggleUI() {
+        uiHidden = !uiHidden;
+        topHeader.style.display = uiHidden ? 'none' : '';
+        bottomBar.style.display = uiHidden ? 'none' : '';
+    }
+
+    function zoom(delta) {
+        currentWidth = Math.max(20, Math.min(300, currentWidth + delta));
+        document.getElementById('zoom-level').textContent = currentWidth + '%';
+        document.querySelectorAll('.page-img').forEach(img => {
+            img.style.width = currentWidth + '%';
         });
+    }
 
-    </script>
+    function setWidth(btn, w) {
+        document.querySelectorAll('.setting-group:nth-child(4) .setting-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('image-container').style.maxWidth = w + 'px';
+    }
+
+    function setTheme(btn, theme) {
+        btn.closest('.setting-options').querySelectorAll('.setting-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const themes = { light: '#f4f4f4', dark: '#0f1117', sepia: '#f4e5c2' };
+        document.body.style.background = themes[theme] || '#0f1117';
+    }
+
+    function setReadMode(btn) {
+        btn.closest('.setting-options').querySelectorAll('.setting-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function seekProgress(e) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const pct = (e.clientX - rect.left) / rect.width;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        window.scrollTo({ top: pct * docHeight, behavior: 'smooth' });
+    }
+
+    let autoScrollInterval = null;
+    function toggleAutoScroll(el) {
+        el.classList.toggle('on');
+        if (el.classList.contains('on')) {
+            autoScrollInterval = setInterval(() => window.scrollBy(0, 1), 30);
+        } else {
+            clearInterval(autoScrollInterval);
+        }
+    }
+
+    function switchTab(name) {
+        document.querySelectorAll('.rpanel-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel-content').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        document.getElementById('panel-' + name).classList.add('active');
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft') {
+            {% if prev_id %}window.location.href = "{{ url_for('album.view_album', id=prev_id) }}";{% endif %}
+        } else if (e.key === 'ArrowRight') {
+            {% if next_id %}window.location.href = "{{ url_for('album.view_album', id=next_id) }}";{% endif %}
+        } else if (e.key === 'h' || e.key === 'H') {
+            toggleUI();
+        }
+    });
+
+    // Click zone navigation
+    document.getElementById('prev-area').addEventListener('click', () => {
+        {% if prev_id %}window.location.href = "{{ url_for('album.view_album', id=prev_id) }}";{% endif %}
+    });
+    document.getElementById('next-area').addEventListener('click', () => {
+        {% if next_id %}window.location.href = "{{ url_for('album.view_album', id=next_id) }}";{% endif %}
+    });
+    document.getElementById('center-area').addEventListener('click', toggleUI);
+</script>
 </body>
-
 </html>
